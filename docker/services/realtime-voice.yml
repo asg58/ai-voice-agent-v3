@@ -1,0 +1,151 @@
+version: '3.8'
+
+services:
+  # Real-time Voice AI Service
+  realtime-voice:
+    build:
+      context: ./services/realtime-voice
+      dockerfile: Dockerfile
+    container_name: realtime-voice-ai
+    ports:
+      - '8080:8080' # Main API
+      - '9090:9090' # Metrics
+    environment:
+      - SERVICE_HOST=0.0.0.0
+      - SERVICE_PORT=8080
+      - DEBUG=true
+      - LOG_LEVEL=info
+
+      # Audio settings
+      - AUDIO_SAMPLE_RATE=16000
+      - AUDIO_CHANNELS=1
+
+      # VAD settings
+      - VAD_THRESHOLD=0.5
+      - VAD_MIN_SPEECH_DURATION=0.25
+
+      # TTS settings
+      - TTS_LANGUAGE=nl
+      - TTS_SPEED=1.0
+
+      # LLM integration
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3
+
+      # Redis for caching
+      - REDIS_URL=redis://redis:6379/0
+
+      # Database
+      - DATABASE_URL=postgresql+asyncpg://voice_user:voice_pass@postgres:5432/voice_ai
+
+      # WebRTC
+      - WEBRTC_ICE_SERVERS=stun:stun.l.google.com:19302
+
+    volumes:
+      - ./storage/voice:/app/storage
+    depends_on:
+      - redis
+      - postgres
+      - ollama
+    networks:
+      - ai-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  # Ollama for local LLM
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-llm
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_MODELS=llama3,mistral
+    networks:
+      - ai-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # PostgreSQL for conversation storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-voice
+    ports:
+      - '5433:5432'
+    environment:
+      - POSTGRES_DB=voice_ai
+      - POSTGRES_USER=voice_user
+      - POSTGRES_PASSWORD=voice_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus-monitoring
+    ports:
+      - '9091:9090'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-dashboards
+    ports:
+      - '3000:3000'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana:/etc/grafana/provisioning
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+  redis_data:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  ai-network:
+    driver: bridge

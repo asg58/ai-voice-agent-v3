@@ -1,0 +1,29 @@
+version: '3.8'
+
+networks:
+  ai-network:
+    external: true
+    name: ai-voice-agent-v3_ai-network
+
+services:
+  # Event Streaming
+  event-streaming:
+    build:
+      context: ./services/event-streaming
+      dockerfile: Dockerfile
+    container_name: event-streaming
+    ports:
+      - '9092:9092'
+    environment:
+      - PORT=9092
+      - KAFKA_BROKER_URL=kafka:9092
+    external_links:
+      - kafka
+    networks:
+      - ai-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M

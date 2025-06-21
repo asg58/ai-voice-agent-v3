@@ -1,0 +1,38 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "AI Agent Memory & Service Monitoring",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Memory Usage (Redis)",
+        "targets": [{ "expr": "redis_memory_used_bytes", "legendFormat": "Used Memory" }],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+      },
+      {
+        "type": "graph",
+        "title": "MinIO Storage Usage",
+        "targets": [{ "expr": "minio_disk_storage_bytes", "legendFormat": "MinIO Storage" }],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+      },
+      {
+        "type": "graph",
+        "title": "PostgreSQL Connections",
+        "targets": [{ "expr": "pg_stat_activity_count", "legendFormat": "Connections" }],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+      },
+      {
+        "type": "graph",
+        "title": "API Request Latency",
+        "targets": [{ "expr": "http_request_duration_seconds_mean", "legendFormat": "Latency" }],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+      }
+    ],
+    "schemaVersion": 30,
+    "version": 1
+  }
+}

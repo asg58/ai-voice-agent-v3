@@ -1,0 +1,10 @@
+groups:
+  - name: ai-voice-agent-alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: instance_cpu_usage > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High CPU usage detected

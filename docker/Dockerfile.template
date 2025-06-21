@@ -1,0 +1,65 @@
+# =============================================================================
+# OPTIMIZED DOCKERFILE TEMPLATE FOR FAST DOWNLOADS
+# =============================================================================
+# Use this template for all Python services in the project
+# Includes optimized mirrors and download settings
+
+# Use specific Python version for consistency
+FROM python:3.11-slim
+
+# Build arguments
+ARG SERVICE_NAME=unknown
+ARG ENVIRONMENT=production
+
+# Environment variables for optimization
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# Configure fastest Debian mirrors
+RUN echo "deb http://deb.debian.org/debian bookworm main" > /etc/apt/sources.list \
+    && echo "deb http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list \
+    && echo "deb http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
+
+# Update package lists with optimized settings
+RUN apt-get update -o Acquire::ForceIPv4=true \
+    && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    wget \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Configure pip for fastest downloads
+RUN pip config set global.index-url https://pypi.org/simple/ \
+    && pip config set global.extra-index-url "https://pypi.python.org/simple/ https://files.pythonhosted.org/packages/" \
+    && pip config set global.trusted-host "pypi.org pypi.python.org files.pythonhosted.org" \
+    && pip config set global.timeout 300 \
+    && pip config set global.retries 3 \
+    && pip config set global.prefer-binary true
+
+# Set working directory
+WORKDIR /app
+
+# Copy pip configuration
+COPY config/pip.conf /etc/pip.conf
+
+# Upgrade pip and essential tools
+RUN pip install --upgrade --no-cache-dir pip setuptools wheel
+
+# Default health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash --uid 1000 appuser \
+    && chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Default command (override in specific Dockerfiles)
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

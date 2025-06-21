@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realtime-voice-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: realtime-voice-canary
+  template:
+    metadata:
+      labels:
+        app: realtime-voice-canary
+    spec:
+      containers:
+        - name: realtime-voice
+          image: realtime-voice:canary
+          ports:
+            - containerPort: 8000
+          resources:
+            limits:
+              cpu: '500m'
+              memory: '512Mi'
+            requests:
+              cpu: '250m'
+              memory: '256Mi'

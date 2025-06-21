@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Voice AI Test - Simple</title>
+    <style>
+      body {
+        font-family: Arial;
+        margin: 20px;
+      }
+      .container {
+        max-width: 600px;
+      }
+      button {
+        padding: 10px;
+        margin: 5px;
+      }
+      #messages {
+        border: 1px solid #ccc;
+        height: 200px;
+        overflow-y: scroll;
+        padding: 10px;
+        margin: 10px 0;
+      }
+      input {
+        width: 70%;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎙️ Voice AI Test (Simple)</h1>
+
+      <div id="status">Status: Disconnected</div>
+
+      <button onclick="connect()">Connect</button>
+      <button onclick="disconnect()">Disconnect</button>
+      <button onclick="ping()">Ping</button>
+
+      <div id="messages"></div>
+
+      <input type="text" id="messageText" placeholder="Type message..." />
+      <button onclick="sendText()">Send</button>
+
+      <script>
+        let ws = null;
+        let sessionId = null;
+
+        function log(message) {
+          const div = document.getElementById('messages');
+          div.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+          div.scrollTop = div.scrollHeight;
+        }
+
+        async function connect() {
+          try {
+            log('Creating session...');
+
+            const response = await fetch('/sessions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user_id: 'simple_test' }),
+            });
+
+            const data = await response.json();
+            sessionId = data.session_id;
+            log('Session: ' + sessionId);
+
+            ws = new WebSocket('ws://localhost:8080/ws/' + sessionId);
+
+            ws.onopen = function () {
+              document.getElementById('status').innerHTML = 'Status: Connected ✅';
+              log('WebSocket connected!');
+            };
+
+            ws.onmessage = function (event) {
+              const data = JSON.parse(event.data);
+              log('Received: ' + data.type + ' - ' + JSON.stringify(data));
+            };
+
+            ws.onclose = function () {
+              document.getElementById('status').innerHTML = 'Status: Disconnected ❌';
+              log('WebSocket closed');
+            };
+          } catch (error) {
+            log('Error: ' + error);
+          }
+        }
+
+        function disconnect() {
+          if (ws) {
+            ws.close();
+            ws = null;
+          }
+        }
+
+        function ping() {
+          if (ws && sessionId) {
+            ws.send(
+              JSON.stringify({
+                type: 'ping',
+                session_id: sessionId,
+              })
+            );
+            log('Ping sent');
+          }
+        }
+
+        function sendText() {
+          const text = document.getElementById('messageText').value;
+          if (ws && sessionId && text) {
+            ws.send(
+              JSON.stringify({
+                type: 'text_message',
+                session_id: sessionId,
+                text: text,
+              })
+            );
+            log('Sent: ' + text);
+            document.getElementById('messageText').value = '';
+          }
+        }
+
+        // Auto-load message
+        window.onload = function () {
+          log('Page loaded. Click Connect to start.');
+        };
+      </script>
+    </div>
+  </body>
+</html>

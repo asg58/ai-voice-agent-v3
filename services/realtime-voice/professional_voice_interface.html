@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DoosLetters AI Voice Agent - Professional Interface</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-color: #2563eb;
+        --primary-dark: #1d4ed8;
+        --secondary-color: #64748b;
+        --success-color: #059669;
+        --error-color: #dc2626;
+        --warning-color: #d97706;
+        --background: #f8fafc;
+        --card-background: #ffffff;
+        --border-color: #e2e8f0;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--background);
+        color: var(--text-primary);
+        line-height: 1.6;
+      }
+
+      .header {
+        background: var(--card-background);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 0;
+        box-shadow: var(--shadow);
+      }
+
+      .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+      }
+
+      .logo i {
+        font-size: 2rem;
+      }
+
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .status-indicator.online {
+        background: #dcfce7;
+        color: var(--success-color);
+      }
+
+      .status-indicator.offline {
+        background: #fef2f2;
+        color: var(--error-color);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+
+      .card {
+        background: var(--card-background);
+        border-radius: 1rem;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .card-subtitle {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        margin-top: 0.25rem;
+      }
+
+      .card-content {
+        padding: 1.5rem;
+      }
+
+      .voice-chat {
+        grid-column: 1 / -1;
+      }
+
+      .voice-interface {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+        padding: 2rem 0;
+      }
+
+      .voice-visualizer {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .voice-visualizer:hover {
+        transform: scale(1.05);
+      }
+
+      .voice-visualizer.listening {
+        animation: listening-pulse 1.5s infinite;
+        box-shadow: 0 0 30px rgba(37, 99, 235, 0.3);
+      }
+
+      .voice-visualizer.speaking {
+        animation: speaking-pulse 0.8s infinite;
+      }
+
+      @keyframes listening-pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+
+      @keyframes speaking-pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.05);
+          opacity: 0.8;
+        }
+      }
+
+      .voice-icon {
+        font-size: 4rem;
+        color: white;
+        transition: all 0.3s ease;
+      }
+
+      .voice-status {
+        text-align: center;
+        font-size: 1.125rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .voice-controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-size: 0.875rem;
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+      }
+
+      .btn-success {
+        background: var(--success-color);
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #047857;
+        transform: translateY(-1px);
+      }
+
+      .btn-danger {
+        background: var(--error-color);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: var(--secondary-color);
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #475569;
+        transform: translateY(-1px);
+      }
+
+      .conversation-log {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        background: #f8fafc;
+      }
+
+      .message {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        position: relative;
+      }
+
+      .message.user {
+        background: var(--primary-color);
+        color: white;
+        margin-left: 2rem;
+        border-bottom-right-radius: 0.25rem;
+      }
+
+      .message.assistant {
+        background: white;
+        border: 1px solid var(--border-color);
+        margin-right: 2rem;
+        border-bottom-left-radius: 0.25rem;
+      }
+
+      .message-meta {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-top: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-color);
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+      }
+      .feature-list {
+        list-style: none;
+      }
+
+      .feature-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .feature-list i {
+        color: var(--success-color);
+        width: 20px;
+      }
+
+      .text-input-section {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .text-input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+      }
+
+      .text-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .alert {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .alert-success {
+        background: #dcfce7;
+        color: var(--success-color);
+        border: 1px solid #bbf7d0;
+      }
+
+      .alert-error {
+        background: #fef2f2;
+        color: var(--error-color);
+        border: 1px solid #fecaca;
+      }
+
+      .alert-info {
+        background: #dbeafe;
+        color: var(--primary-color);
+        border: 1px solid #bfdbfe;
+      }
+
+      .footer {
+        margin-top: 3rem;
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+      }
+
+      .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f4f6;
+        border-top: 2px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          grid-template-columns: 1fr;
+          padding: 1rem;
+        }
+
+        .header-content {
+          padding: 0 1rem;
+        }
+
+        .voice-visualizer {
+          width: 150px;
+          height: 150px;
+        }
+
+        .voice-icon {
+          font-size: 3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">
+          <i class="fas fa-robot"></i>
+          <span>DoosLetters AI Voice Agent</span>
+        </div>
+        <div class="status-indicator" id="connection-status">
+          <div class="status-dot"></div>
+          <span>Verbinding maken...</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- Live Voice Chat Section -->
+      <div class="card voice-chat">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-microphone"></i>
+            Live Voice Conversation
+          </div>
+          <div class="card-subtitle">Klik op de microfoon om te beginnen met praten</div>
+        </div>
+        <div class="card-content">
+          <div class="voice-interface">
+            <div class="voice-visualizer" id="voice-visualizer" onclick="toggleVoiceChat()">
+              <i class="fas fa-microphone voice-icon" id="voice-icon"></i>
+            </div>
+            <div class="voice-status" id="voice-status">Klik om te beginnen</div>
+            <div class="voice-controls">
+              <button class="btn btn-success" onclick="testMicrophoneAccess()">
+                <i class="fas fa-microphone-alt"></i>
+                Test Microfoon
+              </button>
+              <button class="btn btn-primary" onclick="startVoiceChat()">
+                <i class="fas fa-play"></i>
+                Start Gesprek
+              </button>
+              <button class="btn btn-danger" onclick="stopVoiceChat()">
+                <i class="fas fa-stop"></i>
+                Stop
+              </button>
+              <button class="btn btn-secondary" onclick="clearConversation()">
+                <i class="fas fa-trash"></i>
+                Wissen
+              </button>
+            </div>
+          </div>
+
+          <!-- Text Input Alternative -->
+          <div class="text-input-section">
+            <input
+              type="text"
+              class="text-input"
+              id="text-message"
+              placeholder="Of typ hier je bericht..."
+              onkeypress="handleTextInput(event)"
+            />
+            <button class="btn btn-primary" onclick="sendTextMessage()">
+              <i class="fas fa-paper-plane"></i>
+              Verzenden
+            </button>
+          </div>
+
+          <!-- Conversation Log -->
+          <div class="conversation-log" id="conversation-log">
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              Welkom bij DoosLetters AI Voice Agent. Begin een gesprek door op de microfoon te
+              klikken of typ een bericht.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session Statistics -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-chart-line"></i>
+            Sessie Statistieken
+          </div>
+        </div>
+        <div class="card-content">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value" id="message-count">0</div>
+              <div class="stat-label">Berichten</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="ai-interactions">0</div>
+              <div class="stat-label">AI Interacties</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="avg-response-time">0ms</div>
+              <div class="stat-label">Gem. Reactietijd</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="session-duration">0:00</div>
+              <div class="stat-label">Sessie Duur</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Features -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-brain"></i>
+            AI Mogelijkheden
+          </div>
+        </div>
+        <div class="card-content">
+          <ul class="feature-list">
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>OpenAI GPT-4o-mini Conversatie</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>Whisper Spraakherkenning</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>TTS Spraaksynthese (Nova)</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>Conversatie Geheugen</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>Real-time Audio Processing</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>Nederlandse Taal Optimalisatie</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- System Status -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fas fa-server"></i>
+            Systeem Status
+          </div>
+        </div>
+        <div class="card-content">
+          <div id="system-status">
+            <div class="loading-spinner"></div>
+            Status laden...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p>&copy; 2025 DoosLetters AI Voice Agent - Powered by OpenAI GPT-4o-mini, Whisper & TTS</p>
+    </footer>
+
+    <script>
+      // Global variables
+      let websocket = null;
+      let sessionId = null;
+      let mediaRecorder = null;
+      let audioChunks = [];
+      let isRecording = false;
+      let isConnected = false;
+      let messageCount = 0;
+      let aiInteractions = 0;
+      let responseTimes = [];
+      let sessionStartTime = new Date();
+
+      // Initialize on page load
+      document.addEventListener('DOMContentLoaded', function () {
+        initializeApp();
+        updateSessionDuration();
+        setInterval(updateSessionDuration, 1000);
+      });
+
+      async function initializeApp() {
+        updateConnectionStatus('Verbinding maken...', 'offline');
+
+        try {
+          // Create session
+          const response = await fetch('/sessions', { method: 'POST' });
+          const data = await response.json();
+          sessionId = data.session_id;
+
+          // Connect WebSocket
+          await connectWebSocket();
+
+          // Load system status
+          await loadSystemStatus();
+
+          console.log('App initialized successfully');
+        } catch (error) {
+          console.error('Failed to initialize app:', error);
+          showAlert('Fout bij initialiseren van de applicatie', 'error');
+        }
+      }
+
+      async function connectWebSocket() {
+        if (!sessionId) {
+          throw new Error('No session ID available');
+        }
+
+        return new Promise((resolve, reject) => {
+          const wsUrl = `ws://localhost:8082/ws/${sessionId}`;
+          websocket = new WebSocket(wsUrl);
+
+          websocket.onopen = function () {
+            isConnected = true;
+            updateConnectionStatus('Verbonden', 'online');
+            console.log('WebSocket connected');
+            resolve();
+          };
+
+          websocket.onmessage = function (event) {
+            handleWebSocketMessage(JSON.parse(event.data));
+          };
+
+          websocket.onclose = function () {
+            isConnected = false;
+            updateConnectionStatus('Verbinding verbroken', 'offline');
+            console.log('WebSocket disconnected');
+          };
+
+          websocket.onerror = function (error) {
+            console.error('WebSocket error:', error);
+            updateConnectionStatus('Verbindingsfout', 'offline');
+            reject(error);
+          };
+
+          // Timeout after 5 seconds
+          setTimeout(() => {
+            if (!isConnected) {
+              reject(new Error('WebSocket connection timeout'));
+            }
+          }, 5000);
+        });
+      }
+
+      function handleWebSocketMessage(data) {
+        console.log('Received:', data);
+
+        switch (data.type) {
+          case 'ai_status':
+            console.log('AI Status received');
+            break;
+
+          case 'pong':
+            console.log('Pong received');
+            break;
+
+          case 'ai_text_response':
+            handleAITextResponse(data);
+            break;
+
+          case 'ai_audio_response':
+            handleAIAudioResponse(data);
+            break;
+
+          case 'error':
+            handleError(data);
+            break;
+
+          default:
+            console.log('Unknown message type:', data.type);
+        }
+      }
+
+      function handleAITextResponse(data) {
+        addMessageToLog('user', data.user_text, { time: data.processing_time_ms });
+        addMessageToLog('assistant', data.ai_text, { time: data.processing_time_ms });
+
+        // Update statistics
+        messageCount += 2;
+        aiInteractions++;
+        responseTimes.push(data.processing_time_ms);
+        updateStatistics();
+      }
+
+      function handleAIAudioResponse(data) {
+        addMessageToLog('user', data.transcribed_text, {
+          type: 'audio',
+          time: data.processing_times.total_ms,
+        });
+        addMessageToLog('assistant', data.ai_response_text, {
+          type: 'audio',
+          time: data.processing_times.total_ms,
+        });
+
+        // Play AI response audio if available
+        if (data.ai_audio_base64) {
+          playAudioResponse(data.ai_audio_base64);
+        }
+
+        // Update statistics
+        messageCount += 2;
+        aiInteractions++;
+        responseTimes.push(data.processing_times.total_ms);
+        updateStatistics();
+
+        // Reset voice interface
+        setVoiceStatus('Klik om opnieuw te spreken');
+        setVoiceIcon('microphone');
+        document.getElementById('voice-visualizer').classList.remove('listening', 'speaking');
+      }
+      function handleError(data) {
+        console.error('AI Error:', data);
+        showAlert(`AI Fout: ${data.error_message}`, 'error');
+        setVoiceStatus('Fout opgetreden - probeer opnieuw');
+        setVoiceIcon('microphone');
+        document.getElementById('voice-visualizer').classList.remove('listening', 'speaking');
+      }
+
+      async function startVoiceChat() {
+        if (!isConnected) {
+          showAlert('Geen verbinding met de server', 'error');
+          return;
+        }
+
+        try {
+          // Enhanced audio constraints for better quality
+          const audioConstraints = {
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+              sampleRate: 44100,
+              channelCount: 1,
+              volume: 1.0,
+            },
+          };
+
+          console.log('🎤 Requesting microphone access with enhanced constraints...');
+          const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+
+          console.log('✅ Microphone access granted');
+          console.log('🔊 Audio track settings:', stream.getAudioTracks()[0].getSettings());
+
+          // Find best supported MIME type for recording
+          const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/wav', 'audio/mp4'];
+
+          let selectedMimeType = '';
+          for (const mimeType of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(mimeType)) {
+              selectedMimeType = mimeType;
+              break;
+            }
+          }
+
+          if (!selectedMimeType) {
+            throw new Error('Geen ondersteund audio formaat gevonden');
+          }
+
+          console.log('🎬 Using MIME type:', selectedMimeType);
+
+          mediaRecorder = new MediaRecorder(stream, {
+            mimeType: selectedMimeType,
+            audioBitsPerSecond: 128000,
+          });
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = function (event) {
+            if (event.data.size > 0) {
+              audioChunks.push(event.data);
+              console.log(`📦 Audio chunk received: ${event.data.size} bytes`);
+            }
+          };
+
+          mediaRecorder.onstop = function () {
+            console.log('🛑 Recording stopped, processing audio...');
+            processAudioRecording();
+          };
+
+          mediaRecorder.onerror = function (event) {
+            console.error('❌ MediaRecorder error:', event.error);
+            showAlert(`Recording fout: ${event.error}`, 'error');
+          };
+
+          // Start recording with chunks every 1000ms
+          mediaRecorder.start(1000);
+          isRecording = true;
+
+          setVoiceStatus('Aan het luisteren... spreek nu');
+          setVoiceIcon('stop');
+          document.getElementById('voice-visualizer').classList.add('listening');
+
+          console.log('🎤 Voice recording started successfully');
+        } catch (error) {
+          console.error('❌ Error starting voice chat:', error);
+          let errorMessage = 'Microfoon fout opgetreden';
+
+          switch (error.name) {
+            case 'NotAllowedError':
+              errorMessage =
+                'Microfoon toegang geweigerd. Klik op het slot icoon in de adresbalk en sta microfoon toe.';
+              break;
+            case 'NotFoundError':
+              errorMessage = 'Geen microfoon gevonden. Controleer of je microfoon is aangesloten.';
+              break;
+            case 'NotReadableError':
+              errorMessage =
+                'Microfoon is in gebruik door een andere applicatie. Sluit andere apps zoals Teams, Zoom, etc.';
+              break;
+            case 'OverconstrainedError':
+              errorMessage =
+                'Microfoon voldoet niet aan de vereisten. Probeer een andere microfoon.';
+              break;
+            default:
+              errorMessage = `Onbekende fout: ${error.message}`;
+          }
+
+          showAlert(errorMessage, 'error');
+          setVoiceStatus('Fout bij starten - probeer opnieuw');
+        }
+      }
+
+      function stopVoiceChat() {
+        if (mediaRecorder && isRecording) {
+          mediaRecorder.stop();
+          isRecording = false;
+
+          setVoiceStatus('Audio wordt verwerkt...');
+          setVoiceIcon('cog');
+          document.getElementById('voice-visualizer').classList.remove('listening');
+          document.getElementById('voice-visualizer').classList.add('speaking');
+        }
+      }
+
+      function toggleVoiceChat() {
+        if (isRecording) {
+          stopVoiceChat();
+        } else {
+          startVoiceChat();
+        }
+      }
+
+      function clearConversation() {
+        document.getElementById('conversation-log').innerHTML = '';
+        messageCount = 0;
+        aiInteractions = 0;
+        responseTimes = [];
+        updateStatistics();
+      }
+
+      async function processAudioRecording() {
+        console.log('🔄 Processing audio recording...');
+
+        if (audioChunks.length === 0) {
+          console.warn('⚠️ No audio chunks recorded');
+          setVoiceStatus('Geen audio opgenomen - probeer opnieuw');
+          setVoiceIcon('microphone');
+          document.getElementById('voice-visualizer').classList.remove('listening', 'speaking');
+          return;
+        }
+
+        try {
+          console.log(`📦 Processing ${audioChunks.length} audio chunks`);
+
+          // Create blob with correct MIME type
+          const mimeType = mediaRecorder.mimeType || 'audio/webm';
+          const audioBlob = new Blob(audioChunks, { type: mimeType });
+
+          console.log(`🎵 Audio blob created: ${audioBlob.size} bytes, type: ${mimeType}`);
+
+          // Validate audio blob
+          if (audioBlob.size === 0) {
+            throw new Error('Audio blob is empty');
+          }
+
+          if (audioBlob.size < 1000) {
+            console.warn('⚠️ Audio blob seems very small:', audioBlob.size);
+          }
+
+          // Convert to array buffer
+          const arrayBuffer = await audioBlob.arrayBuffer();
+          console.log(`💾 Array buffer size: ${arrayBuffer.byteLength} bytes`);
+
+          // Convert to base64
+          const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+          console.log(`📄 Base64 audio length: ${base64Audio.length} characters`);
+
+          // Validate WebSocket connection
+          if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+            throw new Error('WebSocket connection not available');
+          }
+
+          // Send audio to AI with additional metadata
+          const audioMessage = {
+            type: 'audio_data',
+            audio_data: base64Audio,
+            metadata: {
+              mimeType: mimeType,
+              size: audioBlob.size,
+              chunks: audioChunks.length,
+              timestamp: Date.now(),
+            },
+          };
+
+          console.log('📡 Sending audio to AI service...');
+          websocket.send(JSON.stringify(audioMessage));
+
+          setVoiceStatus('AI verwerkt je spraak...');
+          setVoiceIcon('brain');
+          console.log('✅ Audio successfully sent to AI');
+
+          // Clear chunks for next recording
+          audioChunks = [];
+        } catch (error) {
+          console.error('❌ Error processing audio:', error);
+
+          let errorMessage = 'Fout bij verwerken van audio';
+
+          if (error.message.includes('WebSocket')) {
+            errorMessage = 'Geen verbinding met AI service - herlaad de pagina';
+          } else if (error.message.includes('empty')) {
+            errorMessage = 'Geen audio opgenomen - spreek harder of controleer microfoon';
+          } else {
+            errorMessage = `Audio processing fout: ${error.message}`;
+          }
+          showAlert(errorMessage, 'error');
+          setVoiceStatus('Fout bij audio verwerking - probeer opnieuw');
+          setVoiceIcon('microphone');
+          document.getElementById('voice-visualizer').classList.remove('listening', 'speaking');
+
+          // Clear chunks
+          audioChunks = [];
+        }
+      }
+      function playAudioResponse(base64Audio) {
+        console.log('🔊 Playing AI audio response...');
+
+        try {
+          if (!base64Audio || base64Audio.length === 0) {
+            console.warn('⚠️ No audio data received from AI');
+            setVoiceStatus('Geen audio ontvangen van AI');
+            return;
+          }
+
+          console.log(`📄 Base64 audio length: ${base64Audio.length} characters`);
+
+          // Decode base64 audio
+          const audioData = atob(base64Audio);
+          const arrayBuffer = new ArrayBuffer(audioData.length);
+          const uint8Array = new Uint8Array(arrayBuffer);
+
+          for (let i = 0; i < audioData.length; i++) {
+            uint8Array[i] = audioData.charCodeAt(i);
+          }
+
+          console.log(`🎵 Audio buffer created: ${arrayBuffer.byteLength} bytes`);
+
+          // Create blob and URL - try different MIME types
+          const mimeTypes = ['audio/mp3', 'audio/mpeg', 'audio/wav', 'audio/ogg'];
+          let audio = null;
+
+          for (const mimeType of mimeTypes) {
+            try {
+              const blob = new Blob([arrayBuffer], { type: mimeType });
+              const audioUrl = URL.createObjectURL(blob);
+              audio = new Audio(audioUrl);
+              console.log(`🎧 Created audio with MIME type: ${mimeType}`);
+              break;
+            } catch (e) {
+              console.warn(`⚠️ Failed to create audio with ${mimeType}:`, e);
+            }
+          }
+
+          if (!audio) {
+            throw new Error('Could not create audio element with any MIME type');
+          }
+
+          // Set up audio event handlers
+          audio.onloadstart = () => {
+            console.log('📥 Audio loading started');
+            setVoiceStatus('AI audio wordt geladen...');
+          };
+
+          audio.oncanplay = () => {
+            console.log('✅ Audio can play');
+          };
+
+          audio.onplay = () => {
+            console.log('▶️ AI response audio playing');
+            setVoiceStatus('AI spreekt...');
+            document.getElementById('voice-visualizer').classList.add('speaking');
+          };
+
+          audio.onended = () => {
+            console.log('✅ AI audio playback completed');
+            setVoiceStatus('Klik om opnieuw te spreken');
+            setVoiceIcon('microphone');
+            document.getElementById('voice-visualizer').classList.remove('speaking');
+
+            // Clean up URL
+            URL.revokeObjectURL(audio.src);
+          };
+
+          audio.onerror = (error) => {
+            console.error('❌ Audio playback error:', error);
+            setVoiceStatus('Fout bij afspelen AI audio');
+            document.getElementById('voice-visualizer').classList.remove('speaking');
+          };
+
+          // Start playback
+          audio
+            .play()
+            .then(() => {
+              console.log('🎉 Audio playback started successfully');
+            })
+            .catch((error) => {
+              console.error('❌ Error starting audio playback:', error);
+              showAlert('Fout bij afspelen AI antwoord', 'error');
+              setVoiceStatus('Audio afspeel fout');
+            });
+        } catch (error) {
+          console.error('❌ Error processing audio response:', error);
+          showAlert(`Audio fout: ${error.message}`, 'error');
+          setVoiceStatus('Fout bij audio verwerking');
+          setVoiceIcon('microphone');
+          document.getElementById('voice-visualizer').classList.remove('speaking');
+        }
+      }
+
+      async function sendTextMessage() {
+        const input = document.getElementById('text-message');
+        const text = input.value.trim();
+
+        if (!text) {
+          showAlert('Voer een bericht in', 'error');
+          return;
+        }
+
+        if (!isConnected) {
+          showAlert('Geen verbinding met de server', 'error');
+          return;
+        }
+
+        // Send text message
+        websocket.send(
+          JSON.stringify({
+            type: 'text_message',
+            text: text,
+          })
+        );
+
+        input.value = '';
+        console.log('Text message sent:', text);
+      }
+
+      function handleTextInput(event) {
+        if (event.key === 'Enter') {
+          sendTextMessage();
+        }
+      }
+
+      function addMessageToLog(role, content, meta = {}) {
+        const log = document.getElementById('conversation-log');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${role}`;
+
+        const contentDiv = document.createElement('div');
+        contentDiv.textContent = content;
+        messageDiv.appendChild(contentDiv);
+
+        if (meta.time) {
+          const metaDiv = document.createElement('div');
+          metaDiv.className = 'message-meta';
+          metaDiv.innerHTML = `
+                    <span>${new Date().toLocaleTimeString()}</span>
+                    <span>${meta.time}ms</span>
+                `;
+          messageDiv.appendChild(metaDiv);
+        }
+
+        log.appendChild(messageDiv);
+        log.scrollTop = log.scrollHeight;
+      }
+
+      function clearConversation() {
+        document.getElementById('conversation-log').innerHTML = '';
+        messageCount = 0;
+        aiInteractions = 0;
+        responseTimes = [];
+        updateStatistics();
+      }
+
+      function updateStatistics() {
+        document.getElementById('message-count').textContent = messageCount;
+        document.getElementById('ai-interactions').textContent = aiInteractions;
+
+        const avgTime =
+          responseTimes.length > 0
+            ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+            : 0;
+        document.getElementById('avg-response-time').textContent = avgTime + 'ms';
+      }
+
+      function updateSessionDuration() {
+        const now = new Date();
+        const duration = Math.floor((now - sessionStartTime) / 1000);
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        document.getElementById('session-duration').textContent = `${minutes}:${seconds
+          .toString()
+          .padStart(2, '0')}`;
+      }
+
+      function updateConnectionStatus(text, status) {
+        const statusElement = document.getElementById('connection-status');
+        statusElement.className = `status-indicator ${status}`;
+        statusElement.querySelector('span').textContent = text;
+      }
+
+      function setVoiceStatus(text) {
+        document.getElementById('voice-status').textContent = text;
+      }
+
+      function setVoiceIcon(iconName) {
+        const iconElement = document.getElementById('voice-icon');
+        iconElement.className = `fas fa-${iconName} voice-icon`;
+      }
+
+      function showAlert(message, type = 'info') {
+        const log = document.getElementById('conversation-log');
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+
+        const icon =
+          type === 'error'
+            ? 'exclamation-triangle'
+            : type === 'success'
+            ? 'check-circle'
+            : 'info-circle';
+
+        alertDiv.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                ${message}
+            `;
+
+        log.appendChild(alertDiv);
+        log.scrollTop = log.scrollHeight;
+      }
+
+      async function loadSystemStatus() {
+        try {
+          const response = await fetch('/health');
+          const data = await response.json();
+
+          const statusHtml = `
+                    <div class="feature-list">
+                        <li>
+                            <i class="fas fa-${
+                              data.ai_status.openai_available ? 'check-circle' : 'times-circle'
+                            }"></i>
+                            <span>OpenAI: ${
+                              data.ai_status.openai_available ? 'Beschikbaar' : 'Niet beschikbaar'
+                            }</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-${
+                              data.ai_status.client_ready ? 'check-circle' : 'times-circle'
+                            }"></i>
+                            <span>AI Client: ${
+                              data.ai_status.client_ready ? 'Klaar' : 'Niet klaar'
+                            }</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <span>Uptime: ${Math.round(data.uptime_seconds)}s</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-users"></i>
+                            <span>Actieve Sessies: ${data.statistics.sessions}</span>
+                        </li>
+                    </div>
+                `;
+
+          document.getElementById('system-status').innerHTML = statusHtml;
+        } catch (error) {
+          console.error('Error loading system status:', error);
+          document.getElementById('system-status').innerHTML =
+            '<div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i>Fout bij laden systeem status</div>';
+        }
+      }
+      async function testMicrophoneAccess() {
+        console.log('🎤 Testing microphone access...');
+        setVoiceStatus('Microfoon test...');
+
+        try {
+          // Test basic microphone access first
+          console.log('📱 Requesting basic microphone access...');
+          const basicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log('✅ Basic microphone access granted');
+
+          // Get audio track info
+          const audioTrack = basicStream.getAudioTracks()[0];
+          const capabilities = audioTrack.getCapabilities();
+          const settings = audioTrack.getSettings();
+
+          console.log('🎵 Audio capabilities:', capabilities);
+          console.log('🔧 Audio settings:', settings);
+
+          // Test MediaRecorder support
+          const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/wav', 'audio/mp4'];
+          let supportedTypes = [];
+
+          for (const type of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(type)) {
+              supportedTypes.push(type);
+            }
+          }
+
+          console.log('🎬 Supported MIME types:', supportedTypes);
+
+          if (supportedTypes.length === 0) {
+            throw new Error('Geen ondersteunde audio formaten gevonden');
+          }
+
+          // Test short recording
+          console.log('📼 Testing short recording...');
+          const mediaRecorder = new MediaRecorder(basicStream, {
+            mimeType: supportedTypes[0],
+          });
+
+          let testChunks = [];
+          let recordingComplete = false;
+
+          mediaRecorder.ondataavailable = function (event) {
+            if (event.data.size > 0) {
+              testChunks.push(event.data);
+              console.log(`📦 Test chunk: ${event.data.size} bytes`);
+            }
+          };
+
+          mediaRecorder.onstop = function () {
+            recordingComplete = true;
+            console.log(`✅ Test recording complete: ${testChunks.length} chunks`);
+
+            if (testChunks.length > 0) {
+              const totalSize = testChunks.reduce((sum, chunk) => sum + chunk.size, 0);
+              console.log(`📊 Total audio data: ${totalSize} bytes`);
+
+              setVoiceStatus(`✅ Microfoon test geslaagd! (${totalSize} bytes)`);
+              showAlert('Microfoon werkt perfect! Probeer nu "Start Gesprek"', 'success');
+            } else {
+              setVoiceStatus('❌ Geen audio data opgenomen');
+              showAlert('Microfoon test failed - geen audio opgenomen', 'error');
+            }
+          };
+
+          mediaRecorder.onerror = function (event) {
+            console.error('❌ Test recording error:', event.error);
+            setVoiceStatus('❌ Recording test fout');
+            showAlert(`Recording test fout: ${event.error}`, 'error');
+          };
+
+          // Start 2-second test recording
+          mediaRecorder.start();
+          setTimeout(() => {
+            if (mediaRecorder.state === 'recording') {
+              mediaRecorder.stop();
+            }
+          }, 2000);
+
+          // Wait for recording to complete
+          await new Promise((resolve) => {
+            const checkComplete = () => {
+              if (recordingComplete) {
+                resolve();
+              } else {
+                setTimeout(checkComplete, 100);
+              }
+            };
+            checkComplete();
+          });
+
+          // Clean up
+          basicStream.getTracks().forEach((track) => track.stop());
+        } catch (error) {
+          console.error('❌ Microfoon test failed:', error);
+
+          let errorMessage = 'Microfoon test gefaald';
+
+          switch (error.name) {
+            case 'NotAllowedError':
+              errorMessage =
+                'Microfoon toegang geweigerd. Klik op het 🔒 slot icoon en sta microfoon toe.';
+              break;
+            case 'NotFoundError':
+              errorMessage = 'Geen microfoon gevonden. Controleer hardware verbinding.';
+              break;
+            case 'NotReadableError':
+              errorMessage = 'Microfoon in gebruik door andere app. Sluit Teams/Zoom/Discord.';
+              break;
+            case 'OverconstrainedError':
+              errorMessage = 'Microfoon voldoet niet aan vereisten.';
+              break;
+            default:
+              errorMessage = `Microfoon fout: ${error.message}`;
+          }
+
+          setVoiceStatus('❌ Microfoon test gefaald');
+          showAlert(errorMessage, 'error');
+
+          // Suggest solutions
+          setTimeout(() => {
+            if (confirm('Wil je de Permission Fix tool openen voor stap-voor-stap hulp?')) {
+              window.open('/permission-fix', '_blank');
+            }
+          }, 2000);
+        }
+      }
+    </script>
+  </body>
+</html>

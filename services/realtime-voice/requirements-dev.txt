@@ -1,0 +1,7 @@
+# Development requirements
+# Add development-specific dependencies here
+# Example:
+uvicorn==0.22.0
+fastapi==0.95.2
+debugpy==1.6.7
+whisper

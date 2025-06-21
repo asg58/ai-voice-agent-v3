@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  voice-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+    container_name: voice-ai
+    environment:
+      - DATABASE_URL=postgresql://voice_user:voice_pass@postgres:5432/voice_ai
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=admin123456
+      - WEAVIATE_URL=http://weaviate:8080
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - SERVICE_HOST=0.0.0.0
+      - SERVICE_PORT=8080
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=production
+      - SERVICE_DISCOVERY_URL=http://service-discovery:8000
+      - STT_MODEL=whisper-large-v3
+      - TTS_MODEL=elevenlabs
+      - OPENAI_MODEL=gpt-4
+    volumes:
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+    ports:
+      - '8091:8080'
+      - '9093:9090'
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_DB=voice_ai
+      - POSTGRES_USER=voice_user
+      - POSTGRES_PASSWORD=voice_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+networks:
+  ai-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

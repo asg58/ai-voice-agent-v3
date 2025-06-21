@@ -1,0 +1,37 @@
+{
+  "dashboard": {
+    "title": "Realtime Voice Service Metrics",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "CPU Usage",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{container_name=\"realtime-voice\"}[5m])",
+            "legendFormat": "CPU"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Memory Usage",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{container_name=\"realtime-voice\"}",
+            "legendFormat": "Memory"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "title": "Error Rates",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{status=\"500\"}[5m])",
+            "legendFormat": "Errors"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+version: '3.8'
+
+networks:
+  ai-network:
+    external: true
+    name: ai-voice-agent-v3_ai-network
+
+volumes:
+  weaviate-data:
+    driver: local
+
+services:
+  # Weaviate Vector Database
+  weaviate:
+    image: semitechnologies/weaviate:latest
+    container_name: weaviate-db
+    ports:
+      - '8081:8080'
+      - '50051:50051'
+    environment:
+      QUERY_DEFAULTS_LIMIT: 100
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/data'
+      DEFAULT_VECTORIZER_MODULE: 'none'
+      ENABLE_MODULES: ''
+      CLUSTER_HOSTNAME: 'node1'
+      AUTOSCHEMA_ENABLED: 'true'
+      CLUSTER_GOSSIP_BIND_PORT: '7946'
+      CLUSTER_DATA_BIND_PORT: '7947'
+    volumes:
+      - weaviate-data:/data
+    networks:
+      - ai-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    restart: unless-stopped

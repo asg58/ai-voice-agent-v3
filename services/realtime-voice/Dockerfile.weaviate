@@ -1,0 +1,80 @@
+# =============================================================================
+# ENTERPRISE AI VOICE AGENT - WEAVIATE DOCKERFILE
+# =============================================================================
+# Specialized Dockerfile for Weaviate integration
+# Base image: Python 3.11 with optimizations
+
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app \
+    PORT=8080 \
+    WORKERS=4 \
+    WORKER_CLASS=uvicorn.workers.UvicornWorker
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    make \
+    cmake \
+    git \
+    curl \
+    wget \
+    libffi-dev \
+    libssl-dev \
+    libsndfile1 \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for security
+RUN groupadd -r voiceai && useradd -r -g voiceai voiceai
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements files
+COPY requirements*.txt ./
+
+# Install Python dependencies with explicit weaviate-client
+RUN python -m pip install --upgrade pip setuptools wheel && \
+    pip install -r requirements-prod.txt && \
+    # Install weaviate-client and other critical dependencies explicitly
+    pip install -r requirements-weaviate.txt && \
+    # Verify weaviate is installed correctly
+    python -c "import weaviate; print(f'Weaviate client installed: {weaviate.__version__}')" && \
+    # Install other dependencies
+    pip install --no-cache-dir ollama>=0.1.0 psutil uvicorn==0.23.2 fastapi==0.103.1 numpy==1.26.0
+
+# Copy application code
+COPY --chown=voiceai:voiceai ./src ./src
+COPY --chown=voiceai:voiceai ./scripts ./scripts
+COPY --chown=voiceai:voiceai ./storage ./storage
+COPY --chown=voiceai:voiceai ./.env.example ./.env
+COPY --chown=voiceai:voiceai ./check_dependencies.py ./check_dependencies.py
+COPY --chown=voiceai:voiceai ./docker-entrypoint.sh ./docker-entrypoint.sh
+COPY --chown=voiceai:voiceai ./requirements-weaviate.txt /tmp/requirements-weaviate.txt
+COPY --chown=voiceai:voiceai ./requirements-weaviate.txt ./requirements-weaviate.txt
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/storage/temp /app/storage/models \
+    && chown -R voiceai:voiceai /app
+
+# Switch to non-root user
+USER voiceai
+
+# Expose ports
+EXPOSE 8080 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Make entrypoint script executable
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Default command
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

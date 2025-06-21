@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complete Microfoon Debug - DoosLetters AI</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #1a1a1a;
+        color: #ffffff;
+        line-height: 1.6;
+      }
+
+      .debug-container {
+        background: #2d2d2d;
+        padding: 30px;
+        border-radius: 10px;
+        margin: 20px 0;
+      }
+
+      .status-good {
+        color: #4caf50;
+      }
+      .status-bad {
+        color: #f44336;
+      }
+      .status-warning {
+        color: #ff9800;
+      }
+      .status-info {
+        color: #2196f3;
+      }
+
+      .test-section {
+        background: #3d3d3d;
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 8px;
+        border-left: 4px solid #2196f3;
+      }
+
+      .test-result {
+        background: #1e1e1e;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 14px;
+        border: 1px solid #555;
+      }
+
+      button {
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 5px;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background: #45a049;
+      }
+      button:disabled {
+        background: #666;
+        cursor: not-allowed;
+      }
+
+      .big-button {
+        font-size: 18px;
+        padding: 20px 40px;
+        display: block;
+        width: 100%;
+        margin: 20px 0;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #555;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #8bc34a);
+        width: 0%;
+        transition: width 0.3s ease;
+      }
+
+      .log-area {
+        background: #000;
+        color: #00ff00;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: 'Courier New', monospace;
+        height: 200px;
+        overflow-y: auto;
+        margin: 15px 0;
+        border: 1px solid #333;
+      }
+
+      .audio-visualizer {
+        width: 100%;
+        height: 100px;
+        background: #222;
+        border-radius: 5px;
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #444;
+      }
+
+      .wave-bar {
+        width: 4px;
+        background: #4caf50;
+        margin: 1px;
+        transition: height 0.1s ease;
+        border-radius: 2px;
+      }
+
+      .error-box {
+        background: #4d1f1f;
+        border: 1px solid #f44336;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+
+      .success-box {
+        background: #1f4d1f;
+        border: 1px solid #4caf50;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+      }
+
+      .info-card {
+        background: #3d3d3d;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid #555;
+      }
+
+      .info-value {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+
+      .solution-steps {
+        background: #2d4d2d;
+        border-left: 4px solid #4caf50;
+        padding: 20px;
+        margin: 15px 0;
+      }
+
+      .critical {
+        background: #4d2d2d;
+        border-left: 4px solid #f44336;
+        padding: 20px;
+        margin: 15px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="debug-container">
+      <h1>🔧 Complete Microfoon Debug Tool</h1>
+      <p>Deze tool identificeert en lost alle microfoon problemen op.</p>
+
+      <!-- Quick Action -->
+      <div class="test-section">
+        <h2>🚀 Direct Actie</h2>
+        <button class="big-button" onclick="performCompleteDebug()">
+          🔍 START COMPLETE MICROFOON DIAGNOSE
+        </button>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-bar"></div>
+        </div>
+        <div id="quick-status"></div>
+      </div>
+
+      <!-- System Information -->
+      <div class="test-section">
+        <h2>💻 Systeem Informatie</h2>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-value" id="browser-name">-</div>
+            <div>Browser</div>
+          </div>
+          <div class="info-card">
+            <div class="info-value" id="os-info">-</div>
+            <div>Besturingssysteem</div>
+          </div>
+          <div class="info-card">
+            <div class="info-value" id="secure-context">-</div>
+            <div>Secure Context</div>
+          </div>
+          <div class="info-card">
+            <div class="info-value" id="api-support">-</div>
+            <div>API Support</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permission Status -->
+      <div class="test-section">
+        <h2>🔐 Permission Status</h2>
+        <button onclick="checkPermissions()">Check Huidige Permissions</button>
+        <button onclick="requestPermissions()">Vraag Microfoon Toegang</button>
+        <button onclick="resetPermissions()">Reset Permissions</button>
+        <div id="permission-status"></div>
+      </div>
+
+      <!-- Hardware Detection -->
+      <div class="test-section">
+        <h2>🎤 Hardware Detectie</h2>
+        <button onclick="scanAudioDevices()">Scan Audio Devices</button>
+        <button onclick="testDefaultMicrophone()">Test Default Microfoon</button>
+        <div id="hardware-status"></div>
+      </div>
+
+      <!-- Live Audio Test -->
+      <div class="test-section">
+        <h2>🎵 Live Audio Test</h2>
+        <button onclick="startAudioTest()">Start Audio Test</button>
+        <button onclick="stopAudioTest()">Stop Audio Test</button>
+        <div class="audio-visualizer" id="audio-visualizer">
+          <div class="status-info">Klik 'Start Audio Test' om te beginnen</div>
+        </div>
+        <div id="audio-metrics"></div>
+      </div>
+
+      <!-- Browser Settings -->
+      <div class="test-section">
+        <h2>⚙️ Browser Instellingen</h2>
+        <button onclick="openBrowserSettings()">Open Browser Audio Settings</button>
+        <button onclick="showBrowserGuide()">Toon Browser Guide</button>
+        <div id="browser-guide"></div>
+      </div>
+
+      <!-- Debug Log -->
+      <div class="test-section">
+        <h2>📋 Debug Log</h2>
+        <button onclick="clearLog()">Clear Log</button>
+        <button onclick="exportLog()">Export Log</button>
+        <div class="log-area" id="debug-log"></div>
+      </div>
+
+      <!-- Solutions -->
+      <div id="solutions-container"></div>
+    </div>
+
+    <script>
+      let audioContext = null;
+      let mediaStream = null;
+      let analyser = null;
+      let animationFrame = null;
+      let debugSteps = 0;
+      let totalSteps = 8;
+
+      // Initialize
+      document.addEventListener('DOMContentLoaded', function () {
+        log('🚀 Microfoon debug tool gestart');
+        detectSystem();
+      });
+
+      function log(message) {
+        const timestamp = new Date().toLocaleTimeString();
+        const logElement = document.getElementById('debug-log');
+        logElement.innerHTML += `[${timestamp}] ${message}\n`;
+        logElement.scrollTop = logElement.scrollHeight;
+        console.log(message);
+      }
+
+      function updateProgress(percent) {
+        document.getElementById('progress-bar').style.width = percent + '%';
+      }
+
+      function detectSystem() {
+        // Browser detection
+        const userAgent = navigator.userAgent;
+        let browserName = 'Unknown';
+
+        if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+          browserName = 'Chrome';
+        } else if (userAgent.includes('Edg')) {
+          browserName = 'Edge';
+        } else if (userAgent.includes('Firefox')) {
+          browserName = 'Firefox';
+        } else if (userAgent.includes('Safari')) {
+          browserName = 'Safari';
+        }
+
+        document.getElementById('browser-name').textContent = browserName;
+        document.getElementById('os-info').textContent = navigator.platform;
+        document.getElementById('secure-context').textContent = window.isSecureContext
+          ? 'Yes'
+          : 'No';
+
+        // API Support check
+        const apiSupport = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        document.getElementById('api-support').textContent = apiSupport ? 'Yes' : 'No';
+        document.getElementById('api-support').className =
+          'info-value ' + (apiSupport ? 'status-good' : 'status-bad');
+
+        log(`💻 Systeem: ${browserName} op ${navigator.platform}`);
+        log(`🔐 Secure Context: ${window.isSecureContext}`);
+        log(`📡 API Support: ${apiSupport}`);
+      }
+
+      async function performCompleteDebug() {
+        log('🔍 Starting complete microfoon diagnose...');
+        debugSteps = 0;
+        updateProgress(0);
+
+        const status = document.getElementById('quick-status');
+        const solutions = document.getElementById('solutions-container');
+        solutions.innerHTML = '';
+
+        try {
+          // Step 1: Check basic APIs
+          status.innerHTML = '<div class="status-info">⏳ Checking browser APIs...</div>';
+          await sleep(500);
+          const apisOk = await checkAPIs();
+          debugSteps++;
+          updateProgress((debugSteps / totalSteps) * 100);
+
+          // Step 2: Check permissions
+          status.innerHTML = '<div class="status-info">⏳ Checking permissions...</div>';
+          await sleep(500);
+          const permissionsStatus = await checkPermissions();
+          debugSteps++;
+          updateProgress((debugSteps / totalSteps) * 100);
+
+          // Step 3: Scan devices
+          status.innerHTML = '<div class="status-info">⏳ Scanning audio devices...</div>';
+          await sleep(500);
+          const devicesFound = await scanAudioDevices();
+          debugSteps++;
+          updateProgress((debugSteps / totalSteps) * 100);
+
+          // Step 4: Test microphone access
+          status.innerHTML = '<div class="status-info">⏳ Testing microphone access...</div>';
+          await sleep(500);
+          const micAccess = await testMicrophoneAccess();
+          debugSteps++;
+          updateProgress((debugSteps / totalSteps) * 100);
+
+          // Step 5: Test recording
+          status.innerHTML = '<div class="status-info">⏳ Testing recording capability...</div>';
+          await sleep(500);
+          const recordingOk = await testRecording();
+          debugSteps++;
+          updateProgress((debugSteps / totalSteps) * 100);
+
+          // Step 6: Test audio analysis
+          status.innerHTML = '<div class="status-info">⏳ Testing audio analysis...</div>';
+          await sleep(500);
+          const analysisOk = await testAudioAnalysis();
+          debugSteps++;
+          updateProgress((debugSteps / totalSteps) * 100);
+
+          // Step 7: Browser specific checks
+          status.innerHTML =
+            '<div class="status-info">⏳ Checking browser specific settings...</div>';
+          await sleep(500);
+          const browserOk = await checkBrowserSpecific();
+          debugSteps++;
+          updateProgress((debugSteps / totalSteps) * 100);
+
+          // Step 8: Generate solutions
+          status.innerHTML = '<div class="status-info">⏳ Generating solutions...</div>';
+          await sleep(500);
+          generateSolutions(
+            apisOk,
+            permissionsStatus,
+            devicesFound,
+            micAccess,
+            recordingOk,
+            analysisOk,
+            browserOk
+          );
+          debugSteps++;
+          updateProgress(100);
+
+          status.innerHTML = '<div class="status-good">✅ Complete diagnose voltooid!</div>';
+          log('✅ Complete microfoon diagnose voltooid');
+        } catch (error) {
+          status.innerHTML = `<div class="status-bad">❌ Diagnose fout: ${error.message}</div>`;
+          log(`❌ Diagnose fout: ${error.message}`);
+        }
+      }
+
+      function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      async function checkAPIs() {
+        log('🔍 Checking browser APIs...');
+
+        const results = {
+          mediaDevices: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+          mediaRecorder: !!window.MediaRecorder,
+          audioContext: !!(window.AudioContext || window.webkitAudioContext),
+          isSecure: window.isSecureContext,
+        };
+
+        log(`📡 MediaDevices API: ${results.mediaDevices ? 'OK' : 'MISSING'}`);
+        log(`🎬 MediaRecorder API: ${results.mediaRecorder ? 'OK' : 'MISSING'}`);
+        log(`🎵 AudioContext API: ${results.audioContext ? 'OK' : 'MISSING'}`);
+        log(`🔐 Secure Context: ${results.isSecure ? 'OK' : 'MISSING'}`);
+
+        return results;
+      }
+
+      async function checkPermissions() {
+        log('🔐 Checking microfoon permissions...');
+
+        try {
+          if (navigator.permissions) {
+            const permission = await navigator.permissions.query({ name: 'microphone' });
+            log(`🔐 Permission state: ${permission.state}`);
+
+            const statusDiv = document.getElementById('permission-status');
+            let statusClass = 'status-info';
+            let message = '';
+
+            switch (permission.state) {
+              case 'granted':
+                statusClass = 'status-good';
+                message = '✅ Microfoon permission verleend';
+                break;
+              case 'denied':
+                statusClass = 'status-bad';
+                message = '❌ Microfoon permission geweigerd';
+                break;
+              case 'prompt':
+                statusClass = 'status-warning';
+                message = '⚠️ Microfoon permission moet nog worden gevraagd';
+                break;
+            }
+
+            statusDiv.innerHTML = `<div class="${statusClass}">${message}</div>`;
+            return permission.state;
+          } else {
+            log('⚠️ Permissions API niet beschikbaar');
+            return 'unknown';
+          }
+        } catch (error) {
+          log(`❌ Permission check fout: ${error.message}`);
+          return 'error';
+        }
+      }
+
+      async function scanAudioDevices() {
+        log('🎤 Scanning audio devices...');
+
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const audioInputs = devices.filter((device) => device.kind === 'audioinput');
+
+          log(`🎤 Found ${audioInputs.length} audio input devices`);
+
+          const statusDiv = document.getElementById('hardware-status');
+          if (audioInputs.length === 0) {
+            statusDiv.innerHTML =
+              '<div class="error-box">❌ Geen audio input devices gevonden</div>';
+            return false;
+          } else {
+            let deviceList = '<div class="success-box">✅ Audio devices gevonden:</div>';
+            audioInputs.forEach((device, index) => {
+              const label = device.label || `Microfoon ${index + 1}`;
+              deviceList += `<div class="test-result">📱 ${label} (ID: ${device.deviceId.substring(
+                0,
+                20
+              )}...)</div>`;
+              log(`📱 Device ${index + 1}: ${label}`);
+            });
+            statusDiv.innerHTML = deviceList;
+            return true;
+          }
+        } catch (error) {
+          log(`❌ Device scan fout: ${error.message}`);
+          return false;
+        }
+      }
+
+      async function testMicrophoneAccess() {
+        log('🎤 Testing microphone access...');
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            },
+          });
+
+          log('✅ Microfoon toegang verkregen');
+
+          // Get stream info
+          const audioTrack = stream.getAudioTracks()[0];
+          const settings = audioTrack.getSettings();
+          log(`🎵 Audio track settings: ${JSON.stringify(settings)}`);
+
+          // Clean up
+          stream.getTracks().forEach((track) => track.stop());
+
+          return true;
+        } catch (error) {
+          log(`❌ Microfoon toegang fout: ${error.name} - ${error.message}`);
+          return false;
+        }
+      }
+
+      async function testRecording() {
+        log('🎬 Testing recording capability...');
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          // Test MediaRecorder
+          const mediaRecorder = new MediaRecorder(stream);
+          let dataReceived = false;
+
+          mediaRecorder.ondataavailable = function (event) {
+            if (event.data.size > 0) {
+              dataReceived = true;
+              log(`📦 Recording data received: ${event.data.size} bytes`);
+            }
+          };
+
+          mediaRecorder.start();
+          await sleep(1000);
+          mediaRecorder.stop();
+
+          // Clean up
+          stream.getTracks().forEach((track) => track.stop());
+
+          log(dataReceived ? '✅ Recording capability OK' : '❌ No recording data received');
+          return dataReceived;
+        } catch (error) {
+          log(`❌ Recording test fout: ${error.message}`);
+          return false;
+        }
+      }
+
+      async function testAudioAnalysis() {
+        log('📊 Testing audio analysis...');
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          // Test AudioContext
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const analyser = audioContext.createAnalyser();
+          const microphone = audioContext.createMediaStreamSource(stream);
+
+          analyser.fftSize = 256;
+          microphone.connect(analyser);
+
+          const dataArray = new Uint8Array(analyser.frequencyBinCount);
+          analyser.getByteFrequencyData(dataArray);
+
+          log('✅ Audio analysis capability OK');
+
+          // Clean up
+          stream.getTracks().forEach((track) => track.stop());
+          audioContext.close();
+
+          return true;
+        } catch (error) {
+          log(`❌ Audio analysis fout: ${error.message}`);
+          return false;
+        }
+      }
+
+      async function checkBrowserSpecific() {
+        log('🌐 Checking browser specific settings...');
+
+        const userAgent = navigator.userAgent;
+        let recommendations = [];
+
+        if (userAgent.includes('Chrome') || userAgent.includes('Edg')) {
+          recommendations.push('Chrome/Edge: Check chrome://settings/content/microphone');
+          recommendations.push('Chrome/Edge: Ensure localhost is not blocked');
+        } else if (userAgent.includes('Firefox')) {
+          recommendations.push('Firefox: Check about:preferences#privacy');
+          recommendations.push('Firefox: Check microphone permissions in address bar');
+        } else if (userAgent.includes('Safari')) {
+          recommendations.push('Safari: Check Preferences > Websites > Microphone');
+        }
+
+        recommendations.forEach((rec) => log(`💡 ${rec}`));
+
+        return recommendations;
+      }
+
+      function generateSolutions(
+        apis,
+        permissions,
+        devices,
+        micAccess,
+        recording,
+        analysis,
+        browserRecs
+      ) {
+        log('🔧 Generating solutions...');
+
+        const container = document.getElementById('solutions-container');
+        let solutions = '';
+
+        // Critical issues
+        if (!apis.isSecure) {
+          solutions += `
+                    <div class="critical">
+                        <h3>🚨 KRITIEK: Niet-veilige verbinding</h3>
+                        <p>Microfoon werkt alleen op HTTPS of localhost. Huidige URL is niet veilig.</p>
+                        <button onclick="window.location.href='https://' + window.location.hostname + window.location.pathname">Switch naar HTTPS</button>
+                    </div>
+                `;
+        }
+
+        if (!apis.mediaDevices) {
+          solutions += `
+                    <div class="critical">
+                        <h3>🚨 KRITIEK: Browser ondersteunt geen MediaDevices API</h3>
+                        <p>Je browser is te oud. Update naar een moderne browser.</p>
+                    </div>
+                `;
+        }
+
+        // Permission issues
+        if (permissions === 'denied' || !micAccess) {
+          solutions += `
+                    <div class="solution-steps">
+                        <h3>🔐 OPLOSSING: Microfoon Permission</h3>
+                        <ol>
+                            <li>Klik op het 🔒 slot icoon in de adresbalk</li>
+                            <li>Zet "Microfoon" op "Toestaan"</li>
+                            <li>Herlaad de pagina (F5)</li>
+                            <li>Of ga naar browser instellingen en reset permissions</li>
+                        </ol>
+                        <button onclick="requestPermissions()">Vraag Permission Opnieuw</button>
+                        <button onclick="openBrowserSettings()">Open Browser Instellingen</button>
+                    </div>
+                `;
+        }
+
+        // Hardware issues
+        if (!devices) {
+          solutions += `
+                    <div class="solution-steps">
+                        <h3>🎤 OPLOSSING: Geen Microfoon Gevonden</h3>
+                        <ol>
+                            <li>Controleer of microfoon aangesloten is</li>
+                            <li>Check Windows Sound instellingen</li>
+                            <li>Rechtsklik speaker icoon → Sounds → Recording</li>
+                            <li>Zet microfoon als default device</li>
+                            <li>Test microfoon in Windows</li>
+                        </ol>
+                        <button onclick="openWindowsSound()">Open Windows Sound</button>
+                    </div>
+                `;
+        }
+
+        // Success
+        if (apis.mediaDevices && micAccess && recording && analysis) {
+          solutions += `
+                    <div class="success-box">
+                        <h3>🎉 SUCCESS: Microfoon werkt perfect!</h3>
+                        <p>Alle tests zijn geslaagd. Je microfoon is klaar voor AI voice chat.</p>
+                        <button onclick="window.open('/professional', '_blank')" class="big-button">
+                            🚀 Start AI Voice Chat Nu!
+                        </button>
+                    </div>
+                `;
+        }
+
+        container.innerHTML = solutions;
+      }
+
+      async function requestPermissions() {
+        log('🔐 Requesting microphone permissions...');
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          document.getElementById('permission-status').innerHTML =
+            '<div class="success-box">✅ Microfoon permission verkregen!</div>';
+          log('✅ Permission granted!');
+
+          // Clean up
+          stream.getTracks().forEach((track) => track.stop());
+
+          // Re-run diagnosis
+          setTimeout(() => performCompleteDebug(), 1000);
+        } catch (error) {
+          document.getElementById(
+            'permission-status'
+          ).innerHTML = `<div class="error-box">❌ Permission denied: ${error.message}</div>`;
+          log(`❌ Permission denied: ${error.message}`);
+        }
+      }
+
+      function resetPermissions() {
+        log('🔄 Reset permissions instructies...');
+
+        const instructions = `
+                <div class="solution-steps">
+                    <h3>🔄 Reset Browser Permissions</h3>
+                    <p><strong>Chrome/Edge:</strong></p>
+                    <ol>
+                        <li>Ga naar chrome://settings/content/microphone</li>
+                        <li>Zoek localhost in de lijst</li>
+                        <li>Verwijder de entry</li>
+                        <li>Herlaad deze pagina</li>
+                    </ol>
+                    <p><strong>Firefox:</strong></p>
+                    <ol>
+                        <li>Ga naar about:preferences#privacy</li>
+                        <li>Scroll naar Permissions sectie</li>
+                        <li>Klik Microphone → Settings</li>
+                        <li>Verwijder localhost entries</li>
+                    </ol>
+                </div>
+            `;
+
+        document.getElementById('permission-status').innerHTML = instructions;
+      }
+
+      function openBrowserSettings() {
+        const userAgent = navigator.userAgent;
+
+        if (userAgent.includes('Chrome') || userAgent.includes('Edg')) {
+          window.open('chrome://settings/content/microphone', '_blank');
+        } else if (userAgent.includes('Firefox')) {
+          window.open('about:preferences#privacy', '_blank');
+        } else {
+          alert('Open je browser instellingen en ga naar Privacy/Security → Microphone');
+        }
+      }
+
+      function openWindowsSound() {
+        // Try to open Windows sound settings
+        try {
+          window.open('ms-settings:sound', '_blank');
+        } catch (error) {
+          alert('Ga naar Windows Instellingen → System → Sound → Input');
+        }
+      }
+
+      async function startAudioTest() {
+        log('🎵 Starting live audio test...');
+
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioContext.createAnalyser();
+          const microphone = audioContext.createMediaStreamSource(mediaStream);
+
+          analyser.fftSize = 256;
+          microphone.connect(analyser);
+
+          // Create visualizer
+          const visualizer = document.getElementById('audio-visualizer');
+          visualizer.innerHTML = '';
+
+          for (let i = 0; i < 32; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'wave-bar';
+            bar.style.height = '5px';
+            visualizer.appendChild(bar);
+          }
+
+          // Start animation
+          animateVisualizer();
+
+          log('✅ Live audio test gestart - spreek in je microfoon!');
+        } catch (error) {
+          log(`❌ Audio test fout: ${error.message}`);
+        }
+      }
+
+      function animateVisualizer() {
+        const bars = document.querySelectorAll('.wave-bar');
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        function animate() {
+          analyser.getByteFrequencyData(dataArray);
+
+          for (let i = 0; i < bars.length; i++) {
+            const value = dataArray[i * 4] || 0;
+            const height = (value / 255) * 80 + 5;
+            bars[i].style.height = height + 'px';
+          }
+
+          // Update metrics
+          const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+          document.getElementById(
+            'audio-metrics'
+          ).innerHTML = `<div class="test-result">🔊 Audio Level: ${Math.round(average)}/255 | ${
+            average > 10 ? '🎤 AUDIO DETECTED' : '🔇 Silent'
+          }</div>`;
+
+          if (animationFrame) {
+            animationFrame = requestAnimationFrame(animate);
+          }
+        }
+
+        animationFrame = requestAnimationFrame(animate);
+      }
+
+      function stopAudioTest() {
+        log('🛑 Stopping audio test...');
+
+        if (animationFrame) {
+          cancelAnimationFrame(animationFrame);
+          animationFrame = null;
+        }
+
+        if (mediaStream) {
+          mediaStream.getTracks().forEach((track) => track.stop());
+          mediaStream = null;
+        }
+
+        if (audioContext) {
+          audioContext.close();
+          audioContext = null;
+        }
+
+        document.getElementById('audio-visualizer').innerHTML =
+          '<div class="status-info">Audio test gestopt</div>';
+        document.getElementById('audio-metrics').innerHTML = '';
+      }
+
+      function clearLog() {
+        document.getElementById('debug-log').innerHTML = '';
+      }
+
+      function exportLog() {
+        const logContent = document.getElementById('debug-log').textContent;
+        const blob = new Blob([logContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `microphone-debug-${new Date().getTime()}.txt`;
+        a.click();
+      }
+    </script>
+  </body>
+</html>

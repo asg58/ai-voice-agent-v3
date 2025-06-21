@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # Transformers API (for Weaviate)
+  transformers-api:
+    image: semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
+    container_name: transformers-api
+    environment:
+      - ENABLE_CUDA=0
+    ports:
+      - '8087:8080'
+    networks:
+      - ai-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  # Transformers Passage API (for Weaviate)
+  transformers-passage-api:
+    image: semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
+    container_name: transformers-passage-api
+    environment:
+      - ENABLE_CUDA=0
+    ports:
+      - '8088:8080'
+    networks:
+      - ai-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  # Transformers Query API (for Weaviate)
+  transformers-query-api:
+    image: semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
+    container_name: transformers-query-api
+    environment:
+      - ENABLE_CUDA=0
+    ports:
+      - '8089:8080'
+    networks:
+      - ai-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+networks:
+  ai-network:
+    external: true
+    name: ai-voice-agent-v3_ai-network

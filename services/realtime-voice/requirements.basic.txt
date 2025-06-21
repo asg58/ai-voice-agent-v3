@@ -1,0 +1,35 @@
+# Real-time Conversational AI - Simplified Requirements for Testing
+# Core dependencies only for Phase 1 testing
+
+# === CORE FRAMEWORK ===
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+websockets==12.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# === BASIC AUDIO ===
+numpy==1.24.3
+
+# === HTTP CLIENT ===
+httpx==0.25.2
+aiohttp==3.9.1
+
+# === REAL-TIME COMMUNICATION ===
+python-socketio==5.10.0
+
+# === UTILITIES ===
+python-multipart==0.0.6
+python-dotenv==1.0.0
+typer==0.9.0
+
+# === DEVELOPMENT ===
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Note: Advanced audio processing dependencies will be added in Phase 2
+# - whisper-cpp-python (requires C++ compiler)
+# - torch/torchaudio (large download)
+# - silero-vad (depends on torch)
+# - TTS (XTTS model)
+# - aiortc (WebRTC, complex build)

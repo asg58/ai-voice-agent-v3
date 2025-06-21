@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
+    <script src="/static/js/dashboard.js" defer></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Voice AI Dashboard</h1>
+        <p>Monitor and manage your voice conversations</p>
+      </header>
+
+      <main>
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <h2>Active Sessions</h2>
+            <div id="active-sessions" class="metric">0</div>
+          </div>
+
+          <div class="dashboard-card">
+            <h2>Total Conversations</h2>
+            <div id="total-conversations" class="metric">0</div>
+          </div>
+
+          <div class="dashboard-card">
+            <h2>System Status</h2>
+            <div id="system-status" class="status-indicator">
+              <div id="system-status-light" class="status-light"></div>
+              <span id="system-status-text">Checking...</span>
+            </div>
+          </div>
+
+          <div class="dashboard-card">
+            <h2>Recent Conversations</h2>
+            <div id="recent-conversations" class="list-container">
+              <p>No recent conversations</p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <p>AI Voice Agent Platform v3</p>
+        <a href="/">Home</a> | <a href="/health/health">Health</a>
+      </footer>
+    </div>
+  </body>
+</html>

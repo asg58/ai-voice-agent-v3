@@ -1,0 +1,10 @@
+progressive_delivery:
+  stages:
+    - canary
+    - blue-green
+    - full_release
+  monitoring:
+    enabled: true
+    tools:
+      - prometheus
+      - grafana

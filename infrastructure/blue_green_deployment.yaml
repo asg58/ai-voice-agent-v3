@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realtime-voice-blue
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: realtime-voice-blue
+  template:
+    metadata:
+      labels:
+        app: realtime-voice-blue
+    spec:
+      containers:
+        - name: realtime-voice
+          image: realtime-voice:blue
+          ports:
+            - containerPort: 8000
+          resources:
+            limits:
+              cpu: '500m'
+              memory: '512Mi'
+            requests:
+              cpu: '250m'
+              memory: '256Mi'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realtime-voice-green
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: realtime-voice-green
+  template:
+    metadata:
+      labels:
+        app: realtime-voice-green
+    spec:
+      containers:
+        - name: realtime-voice
+          image: realtime-voice:green
+          ports:
+            - containerPort: 8000
+          resources:
+            limits:
+              cpu: '500m'
+              memory: '512Mi'
+            requests:
+              cpu: '250m'
+              memory: '256Mi'

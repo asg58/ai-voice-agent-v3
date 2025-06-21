@@ -1,0 +1,34 @@
+version: '3.8'
+
+networks:
+  ai-network:
+    external: true
+    name: ai-voice-agent-v3_ai-network
+
+volumes:
+  minio-data:
+    external: true
+    name: minio-data
+
+services:
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: minio-storage
+    command: server /data --console-address ":9002"
+    ports:
+      - '9003:9000'
+      - '9002:9002'
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio-data:/data
+    networks:
+      - ai-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M

@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  realtime-voice:
+    build:
+      context: ./services/realtime-voice
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'

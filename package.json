@@ -1,0 +1,27 @@
+{
+  "name": "ai-voice-agent-e2e-tests",
+  "version": "1.0.0",
+  "description": "E2E tests for AI Voice Agent platform",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test --ui",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:report": "npx playwright show-report",
+    "install:browsers": "npx playwright install"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "keywords": [
+    "e2e",
+    "testing",
+    "playwright",
+    "api-gateway",
+    "authentication"
+  ],
+  "author": "AI Voice Agent Team",
+  "license": "MIT"
+}

@@ -1,0 +1,72 @@
+services:
+  - name: api-gateway
+    circuit_breaker:
+      enabled: true
+      threshold: 5
+      timeout: 30
+    rate_limit:
+      enabled: true
+      requests: 100
+      window: 60
+    routes:
+      - name: api-gateway-route
+        match:
+          path: /api
+          method: GET
+        destinations:
+          - service_name: api-gateway
+            weight: 100
+
+  - name: realtime-voice-service
+    circuit_breaker:
+      enabled: true
+      threshold: 5
+      timeout: 30
+    rate_limit:
+      enabled: true
+      requests: 100
+      window: 60
+    routes:
+      - name: voice-service-route
+        match:
+          path: /voice
+          method: POST
+        destinations:
+          - service_name: realtime-voice-service
+            weight: 100
+
+  - name: edge-ai
+    circuit_breaker:
+      enabled: true
+      threshold: 5
+      timeout: 30
+    rate_limit:
+      enabled: true
+      requests: 100
+      window: 60
+    routes:
+      - name: edge-ai-route
+        match:
+          path: /ai
+          method: POST
+        destinations:
+          - service_name: edge-ai
+            weight: 100
+
+  - name: dashboard
+    circuit_breaker:
+      enabled: true
+      threshold: 5
+      timeout: 30
+    rate_limit:
+      enabled: true
+      requests: 100
+      window: 60
+    routes:
+      - name: dashboard-route
+        match:
+          path: /dashboard
+          method: GET
+        destinations:
+          - service_name: dashboard
+            weight: 100

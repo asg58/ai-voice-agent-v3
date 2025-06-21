@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice AI Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            background-color: #f8f9fa;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            font-weight: bold;
+            background-color: #f1f8ff;
+        }
+        .session-card {
+            border-left: 5px solid #007bff;
+        }
+        .emotion-neutral { background-color: #f8f9fa; }
+        .emotion-happy { background-color: #d4edda; }
+        .emotion-sad { background-color: #d1ecf1; }
+        .emotion-angry { background-color: #f8d7da; }
+        .emotion-fearful { background-color: #fff3cd; }
+        .emotion-disgusted { background-color: #e2e3e5; }
+        .emotion-surprised { background-color: #cff4fc; }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-active {
+            background-color: #28a745;
+            animation: pulse 2s infinite;
+        }
+        .status-inactive {
+            background-color: #dc3545;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .metrics-card {
+            height: 100%;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        
+        .message-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .user-message {
+            background-color: #e9ecef;
+            border-radius: 15px 15px 15px 0;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            max-width: 80%;
+        }
+        
+        .ai-message {
+            background-color: #d1e7ff;
+            border-radius: 15px 15px 0 15px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            margin-left: auto;
+            max-width: 80%;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="mb-4">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1>Voice AI Dashboard</h1>
+                    <p class="text-muted">Real-time monitoring of voice conversations</p>
+                </div>
+                <div class="col-auto">
+                    <div class="d-flex align-items-center">
+                        <span class="status-indicator status-active"></span>
+                        <span class="me-3">System Active</span>
+                        <button id="refreshBtn" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card metrics-card">
+                    <div class="card-header">System Metrics</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <h6 class="text-muted">Active Sessions</h6>
+                                    <h3 id="activeSessionsCount">0</h3>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <h6 class="text-muted">Total Sessions</h6>
+                                    <h3 id="totalSessionsCount">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <h6 class="text-muted">Avg. Response Time</h6>
+                                    <h3 id="avgResponseTime">0 ms</h3>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <h6 class="text-muted">Uptime</h6>
+                                    <h3 id="uptime">0h 0m</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">Active Sessions</div>
+                    <div class="card-body">
+                        <div id="sessionsContainer">
+                            <div class="text-center py-5 text-muted">
+                                <p>No active sessions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">Session Details</div>
+                    <div class="card-body">
+                        <div id="sessionDetails">
+                            <div class="text-center py-5 text-muted">
+                                <p>Select a session to view details</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Global variables
+        let selectedSessionId = null;
+        let sessions = {};
+        let startTime = new Date();
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up refresh button
+            document.getElementById('refreshBtn').addEventListener('click', refreshDashboard);
+            
+            // Initial data load
+            refreshDashboard();
+            
+            // Set up auto-refresh every 10 seconds
+            setInterval(refreshDashboard, 10000);
+            
+            // Update uptime every second
+            setInterval(updateUptime, 1000);
+        });
+        
+        // Update uptime display
+        function updateUptime() {
+            const now = new Date();
+            const diff = Math.floor((now - startTime) / 1000);
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = diff % 60;
+            
+            document.getElementById('uptime').textContent = 
+                `${hours}h ${minutes}m ${seconds}s`;
+        }
+        
+        // Refresh dashboard data
+        async function refreshDashboard() {
+            try {
+                // Get system metrics
+                const metricsResponse = await fetch('/metrics');
+                const metrics = await metricsResponse.json();
+                
+                // Update metrics display
+                document.getElementById('activeSessionsCount').textContent = metrics.active_sessions || 0;
+                document.getElementById('totalSessionsCount').textContent = metrics.total_sessions || 0;
+                document.getElementById('avgResponseTime').textContent = `${Math.round(metrics.avg_response_time || 0)} ms`;
+                
+                // Get active sessions
+                const sessionsResponse = await fetch('/sessions');
+                const sessionsData = await sessionsResponse.json();
+                
+                // Update sessions
+                sessions = sessionsData.sessions || {};
+                
+                // Update sessions display
+                updateSessionsDisplay();
+                
+                // Update selected session details if needed
+                if (selectedSessionId && sessions[selectedSessionId]) {
+                    showSessionDetails(selectedSessionId);
+                } else if (selectedSessionId && !sessions[selectedSessionId]) {
+                    // Selected session no longer exists
+                    selectedSessionId = null;
+                    document.getElementById('sessionDetails').innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <p>Select a session to view details</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error refreshing dashboard:', error);
+            }
+        }
+        
+        // Update sessions display
+        function updateSessionsDisplay() {
+            const container = document.getElementById('sessionsContainer');
+            
+            if (Object.keys(sessions).length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5 text-muted">
+                        <p>No active sessions</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            for (const sessionId in sessions) {
+                const session = sessions[sessionId];
+                const lastActivity = new Date(session.last_activity * 1000);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - lastActivity) / 60000);
+                
+                const isActive = diffMinutes < 5;
+                const statusClass = isActive ? 'status-active' : 'status-inactive';
+                const emotionClass = `emotion-${session.emotion || 'neutral'}`;
+                
+                html += `
+                    <div class="card session-card mb-2 ${emotionClass}" data-session-id="${sessionId}">
+                        <div class="card-body py-2">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <span class="status-indicator ${statusClass}"></span>
+                                        <strong>${session.user_id}</strong>
+                                    </div>
+                                    <small class="text-muted">ID: ${sessionId.substring(0, 8)}...</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="d-block">Language: ${session.language || 'Unknown'}</small>
+                                    <small class="d-block">Accent: ${session.accent || 'Standard'}</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="d-block">Emotion: ${session.emotion || 'Neutral'}</small>
+                                    <small class="d-block">Last activity: ${diffMinutes}m ago</small>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <button class="btn btn-sm btn-outline-primary view-session-btn">
+                                        View
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+            
+            // Add event listeners to view buttons
+            document.querySelectorAll('.view-session-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const sessionId = this.closest('.session-card').dataset.sessionId;
+                    selectedSessionId = sessionId;
+                    showSessionDetails(sessionId);
+                });
+            });
+        }
+        
+        // Show session details
+        async function showSessionDetails(sessionId) {
+            try {
+                // Get session details
+                const sessionResponse = await fetch(`/session/${sessionId}`);
+                const session = await sessionResponse.json();
+                
+                // Get session messages
+                const messagesResponse = await fetch(`/session/${sessionId}/messages`);
+                const messagesData = await messagesResponse.json();
+                const messages = messagesData.messages || [];
+                
+                // Get session analysis
+                let analysis = null;
+                try {
+                    const analysisResponse = await fetch(`/session/${sessionId}/analysis`);
+                    analysis = await analysisResponse.json();
+                } catch (error) {
+                    console.warn('No analysis available for session:', sessionId);
+                }
+                
+                // Get session emotion
+                let emotion = null;
+                try {
+                    const emotionResponse = await fetch(`/session/${sessionId}/emotion`);
+                    emotion = await emotionResponse.json();
+                } catch (error) {
+                    console.warn('No emotion data available for session:', sessionId);
+                }
+                
+                // Build details HTML
+                let html = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Session Information</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Session ID</th>
+                                    <td>${sessionId}</td>
+                                </tr>
+                                <tr>
+                                    <th>User ID</th>
+                                    <td>${session.user_id}</td>
+                                </tr>
+                                <tr>
+                                    <th>Created</th>
+                                    <td>${new Date(session.created_at).toLocaleString()}</td>
+                                </tr>
+                                <tr>
+                                    <th>Language</th>
+                                    <td>${session.language || 'Unknown'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Accent</th>
+                                    <td>${session.accent || 'Standard'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Target Language</th>
+                                    <td>${session.target_language || session.language || 'Unknown'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Auto Translate</th>
+                                    <td>${session.auto_translate ? 'Enabled' : 'Disabled'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Verified</th>
+                                    <td>${session.verified ? 'Yes' : 'No'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Current Emotion</th>
+                                    <td>${session.emotion || 'Neutral'} (${(session.emotion_score || 0).toFixed(2)})</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Conversation</h5>
+                            <div class="message-list">
+                `;
+                
+                if (messages.length === 0) {
+                    html += `<p class="text-muted">No messages yet</p>`;
+                } else {
+                    for (const message of messages) {
+                        const time = new Date(message.timestamp * 1000).toLocaleTimeString();
+                        if (message.role === 'user') {
+                            html += `
+                                <div class="user-message">
+                                    <div>${message.content}</div>
+                                    <div class="message-time">${time}</div>
+                                </div>
+                            `;
+                        } else {
+                            html += `
+                                <div class="ai-message">
+                                    <div>${message.content}</div>
+                                    <div class="message-time">${time}</div>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+                
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add analysis section if available
+                if (analysis) {
+                    html += `
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5>Conversation Analysis</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6>Sentiment</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Positive</th>
+                                                <td>${(analysis.sentiment.positive || 0).toFixed(2)}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Negative</th>
+                                                <td>${(analysis.sentiment.negative || 0).toFixed(2)}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Neutral</th>
+                                                <td>${(analysis.sentiment.neutral || 0).toFixed(2)}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <h6>Topics</h6>
+                                        <ul class="list-group">
+                    `;
+                    
+                    // Add topics
+                    const topics = Object.entries(analysis.topics || {})
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5);
+                    
+                    if (topics.length === 0) {
+                        html += `<li class="list-group-item">No topics detected</li>`;
+                    } else {
+                        for (const [topic, score] of topics) {
+                            html += `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${topic}
+                                    <span class="badge bg-primary rounded-pill">${score.toFixed(2)}</span>
+                                </li>
+                            `;
+                        }
+                    }
+                    
+                    html += `
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <h6>Intents</h6>
+                                        <ul class="list-group">
+                    `;
+                    
+                    // Add intents
+                    const intents = Object.entries(analysis.intents || {})
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5);
+                    
+                    if (intents.length === 0) {
+                        html += `<li class="list-group-item">No intents detected</li>`;
+                    } else {
+                        for (const [intent, count] of intents) {
+                            html += `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${intent}
+                                    <span class="badge bg-primary rounded-pill">${count}</span>
+                                </li>
+                            `;
+                        }
+                    }
+                    
+                    html += `
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Add emotion section if available
+                if (emotion) {
+                    html += `
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5>Emotion Analysis</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Current Emotion</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Emotion</th>
+                                                <td>${emotion.emotion || 'Neutral'}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Score</th>
+                                                <td>${(emotion.score || 0).toFixed(2)}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Audio Emotion</th>
+                                                <td>${emotion.audio_emotion || 'Neutral'}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Text Emotion</th>
+                                                <td>${emotion.text_emotion || 'Neutral'}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h6>All Scores</h6>
+                                        <table class="table table-sm">
+                    `;
+                    
+                    // Add emotion scores
+                    const scores = Object.entries(emotion.all_scores || {})
+                        .sort((a, b) => b[1] - a[1]);
+                    
+                    if (scores.length === 0) {
+                        html += `<tr><td colspan="2">No emotion scores available</td></tr>`;
+                    } else {
+                        for (const [emotion, score] of scores) {
+                            html += `
+                                <tr>
+                                    <th>${emotion}</th>
+                                    <td>${score.toFixed(2)}</td>
+                                </tr>
+                            `;
+                        }
+                    }
+                    
+                    html += `
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Add action buttons
+                html += `
+                    <div class="row mt-4">
+                        <div class="col-12 text-end">
+                            <button class="btn btn-outline-danger" id="endSessionBtn">End Session</button>
+                        </div>
+                    </div>
+                `;
+                
+                // Update details container
+                document.getElementById('sessionDetails').innerHTML = html;
+                
+                // Add event listener to end session button
+                document.getElementById('endSessionBtn').addEventListener('click', function() {
+                    endSession(sessionId);
+                });
+                
+            } catch (error) {
+                console.error('Error showing session details:', error);
+                document.getElementById('sessionDetails').innerHTML = `
+                    <div class="alert alert-danger">
+                        Error loading session details: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // End session
+        async function endSession(sessionId) {
+            if (!confirm(`Are you sure you want to end session ${sessionId}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/session/${sessionId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    // Remove session from list
+                    delete sessions[sessionId];
+                    
+                    // Update sessions display
+                    updateSessionsDisplay();
+                    
+                    // Clear selected session
+                    if (selectedSessionId === sessionId) {
+                        selectedSessionId = null;
+                        document.getElementById('sessionDetails').innerHTML = `
+                            <div class="text-center py-5 text-muted">
+                                <p>Select a session to view details</p>
+                            </div>
+                        `;
+                    }
+                    
+                    alert('Session ended successfully');
+                } else {
+                    const error = await response.json();
+                    alert(`Error ending session: ${error.detail}`);
+                }
+            } catch (error) {
+                console.error('Error ending session:', error);
+                alert(`Error ending session: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voice AI Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        padding-top: 20px;
+        background-color: #f8f9fa;
+      }
+      .card {
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .card-header {
+        font-weight: bold;
+        background-color: #f1f8ff;
+      }
+      .session-card {
+        border-left: 5px solid #007bff;
+      }
+      .emotion-neutral {
+        background-color: #f8f9fa;
+      }
+      .emotion-happy {
+        background-color: #d4edda;
+      }
+      .emotion-sad {
+        background-color: #d1ecf1;
+      }
+      .emotion-angry {
+        background-color: #f8d7da;
+      }
+      .emotion-fearful {
+        background-color: #fff3cd;
+      }
+      .emotion-disgusted {
+        background-color: #e2e3e5;
+      }
+      .emotion-surprised {
+        background-color: #cff4fc;
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+      .status-active {
+        background-color: #28a745;
+        animation: pulse 2s infinite;
+      }
+      .status-inactive {
+        background-color: #dc3545;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .metrics-card {
+        height: 100%;
+      }
+
+      .chart-container {
+        height: 300px;
+        margin-bottom: 20px;
+      }
+
+      .message-list {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .user-message {
+        background-color: #e9ecef;
+        border-radius: 15px 15px 15px 0;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        max-width: 80%;
+      }
+
+      .ai-message {
+        background-color: #d1e7ff;
+        border-radius: 15px 15px 0 15px;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        margin-left: auto;
+        max-width: 80%;
+      }
+
+      .message-time {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="mb-4">
+        <div class="row align-items-center">
+          <div class="col">
+            <h1>Voice AI Dashboard</h1>
+            <p class="text-muted">Real-time monitoring of voice conversations</p>
+          </div>
+          <div class="col-auto">
+            <div class="d-flex align-items-center">
+              <span class="status-indicator status-active"></span>
+              <span class="me-3">System Active</span>
+              <button id="refreshBtn" class="btn btn-outline-primary">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  class="bi bi-arrow-clockwise"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"
+                  />
+                  <path
+                    d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"
+                  />
+                </svg>
+                Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="card metrics-card">
+            <div class="card-header">System Metrics</div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-6">
+                  <div class="mb-3">
+                    <h6 class="text-muted">Active Sessions</h6>
+                    <h3 id="activeSessionsCount">0</h3>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="mb-3">
+                    <h6 class="text-muted">Total Sessions</h6>
+                    <h3 id="totalSessionsCount">0</h3>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="mb-3">
+                    <h6 class="text-muted">Avg. Response Time</h6>
+                    <h3 id="avgResponseTime">0 ms</h3>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="mb-3">
+                    <h6 class="text-muted">Uptime</h6>
+                    <h3 id="uptime">0h 0m</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header">Active Sessions</div>
+            <div class="card-body">
+              <div id="sessionsContainer">
+                <div class="text-center py-5 text-muted">
+                  <p>No active sessions</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">Session Details</div>
+            <div class="card-body">
+              <div id="sessionDetails">
+                <div class="text-center py-5 text-muted">
+                  <p>Select a session to view details</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Global variables
+      let selectedSessionId = null;
+      let sessions = {};
+      let startTime = new Date();
+
+      // Initialize dashboard
+      document.addEventListener('DOMContentLoaded', function () {
+        // Set up refresh button
+        document.getElementById('refreshBtn').addEventListener('click', refreshDashboard);
+
+        // Initial data load
+        refreshDashboard();
+
+        // Set up auto-refresh every 10 seconds
+        setInterval(refreshDashboard, 10000);
+
+        // Update uptime every second
+        setInterval(updateUptime, 1000);
+      });
+
+      // Update uptime display
+      function updateUptime() {
+        const now = new Date();
+        const diff = Math.floor((now - startTime) / 1000);
+        const hours = Math.floor(diff / 3600);
+        const minutes = Math.floor((diff % 3600) / 60);
+        const seconds = diff % 60;
+
+        document.getElementById('uptime').textContent = `${hours}h ${minutes}m ${seconds}s`;
+      }
+
+      // Refresh dashboard data
+      async function refreshDashboard() {
+        try {
+          // Get system metrics
+          const metricsResponse = await fetch('/metrics');
+          const metrics = await metricsResponse.json();
+
+          // Update metrics display
+          document.getElementById('activeSessionsCount').textContent = metrics.active_sessions || 0;
+          document.getElementById('totalSessionsCount').textContent = metrics.total_sessions || 0;
+          document.getElementById('avgResponseTime').textContent = `${Math.round(
+            metrics.avg_response_time || 0
+          )} ms`;
+
+          // Get active sessions
+          const sessionsResponse = await fetch('/sessions');
+          const sessionsData = await sessionsResponse.json();
+
+          // Update sessions
+          sessions = sessionsData.sessions || {};
+
+          // Update sessions display
+          updateSessionsDisplay();
+
+          // Update selected session details if needed
+          if (selectedSessionId && sessions[selectedSessionId]) {
+            showSessionDetails(selectedSessionId);
+          } else if (selectedSessionId && !sessions[selectedSessionId]) {
+            // Selected session no longer exists
+            selectedSessionId = null;
+            document.getElementById('sessionDetails').innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <p>Select a session to view details</p>
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          console.error('Error refreshing dashboard:', error);
+        }
+      }
+
+      // Update sessions display
+      function updateSessionsDisplay() {
+        const container = document.getElementById('sessionsContainer');
+
+        if (Object.keys(sessions).length === 0) {
+          container.innerHTML = `
+                    <div class="text-center py-5 text-muted">
+                        <p>No active sessions</p>
+                    </div>
+                `;
+          return;
+        }
+
+        let html = '';
+
+        for (const sessionId in sessions) {
+          const session = sessions[sessionId];
+          const lastActivity = new Date(session.last_activity * 1000);
+          const now = new Date();
+          const diffMinutes = Math.floor((now - lastActivity) / 60000);
+
+          const isActive = diffMinutes < 5;
+          const statusClass = isActive ? 'status-active' : 'status-inactive';
+          const emotionClass = `emotion-${session.emotion || 'neutral'}`;
+
+          html += `
+                    <div class="card session-card mb-2 ${emotionClass}" data-session-id="${sessionId}">
+                        <div class="card-body py-2">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <span class="status-indicator ${statusClass}"></span>
+                                        <strong>${session.user_id}</strong>
+                                    </div>
+                                    <small class="text-muted">ID: ${sessionId.substring(
+                                      0,
+                                      8
+                                    )}...</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="d-block">Language: ${
+                                      session.language || 'Unknown'
+                                    }</small>
+                                    <small class="d-block">Accent: ${
+                                      session.accent || 'Standard'
+                                    }</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="d-block">Emotion: ${
+                                      session.emotion || 'Neutral'
+                                    }</small>
+                                    <small class="d-block">Last activity: ${diffMinutes}m ago</small>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <button class="btn btn-sm btn-outline-primary view-session-btn">
+                                        View
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        container.innerHTML = html;
+
+        // Add event listeners to view buttons
+        document.querySelectorAll('.view-session-btn').forEach((button) => {
+          button.addEventListener('click', function () {
+            const sessionId = this.closest('.session-card').dataset.sessionId;
+            selectedSessionId = sessionId;
+            showSessionDetails(sessionId);
+          });
+        });
+      }
+
+      // Show session details
+      async function showSessionDetails(sessionId) {
+        try {
+          // Get session details
+          const sessionResponse = await fetch(`/session/${sessionId}`);
+          const session = await sessionResponse.json();
+
+          // Get session messages
+          const messagesResponse = await fetch(`/session/${sessionId}/messages`);
+          const messagesData = await messagesResponse.json();
+          const messages = messagesData.messages || [];
+
+          // Get session analysis
+          let analysis = null;
+          try {
+            const analysisResponse = await fetch(`/session/${sessionId}/analysis`);
+            analysis = await analysisResponse.json();
+          } catch (error) {
+            console.warn('No analysis available for session:', sessionId);
+          }
+
+          // Get session emotion
+          let emotion = null;
+          try {
+            const emotionResponse = await fetch(`/session/${sessionId}/emotion`);
+            emotion = await emotionResponse.json();
+          } catch (error) {
+            console.warn('No emotion data available for session:', sessionId);
+          }
+
+          // Build details HTML
+          let html = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Session Information</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Session ID</th>
+                                    <td>${sessionId}</td>
+                                </tr>
+                                <tr>
+                                    <th>User ID</th>
+                                    <td>${session.user_id}</td>
+                                </tr>
+                                <tr>
+                                    <th>Created</th>
+                                    <td>${new Date(session.created_at).toLocaleString()}</td>
+                                </tr>
+                                <tr>
+                                    <th>Language</th>
+                                    <td>${session.language || 'Unknown'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Accent</th>
+                                    <td>${session.accent || 'Standard'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Target Language</th>
+                                    <td>${
+                                      session.target_language || session.language || 'Unknown'
+                                    }</td>
+                                </tr>
+                                <tr>
+                                    <th>Auto Translate</th>
+                                    <td>${session.auto_translate ? 'Enabled' : 'Disabled'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Verified</th>
+                                    <td>${session.verified ? 'Yes' : 'No'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Current Emotion</th>
+                                    <td>${session.emotion || 'Neutral'} (${(
+            session.emotion_score || 0
+          ).toFixed(2)})</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Conversation</h5>
+                            <div class="message-list">
+                `;
+
+          if (messages.length === 0) {
+            html += `<p class="text-muted">No messages yet</p>`;
+          } else {
+            for (const message of messages) {
+              const time = new Date(message.timestamp * 1000).toLocaleTimeString();
+              if (message.role === 'user') {
+                html += `
+                                <div class="user-message">
+                                    <div>${message.content}</div>
+                                    <div class="message-time">${time}</div>
+                                </div>
+                            `;
+              } else {
+                html += `
+                                <div class="ai-message">
+                                    <div>${message.content}</div>
+                                    <div class="message-time">${time}</div>
+                                </div>
+                            `;
+              }
+            }
+          }
+
+          html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+          // Add analysis section if available
+          if (analysis) {
+            html += `
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5>Conversation Analysis</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6>Sentiment</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Positive</th>
+                                                <td>${(analysis.sentiment.positive || 0).toFixed(
+                                                  2
+                                                )}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Negative</th>
+                                                <td>${(analysis.sentiment.negative || 0).toFixed(
+                                                  2
+                                                )}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Neutral</th>
+                                                <td>${(analysis.sentiment.neutral || 0).toFixed(
+                                                  2
+                                                )}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <h6>Topics</h6>
+                                        <ul class="list-group">
+                    `;
+
+            // Add topics
+            const topics = Object.entries(analysis.topics || {})
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 5);
+
+            if (topics.length === 0) {
+              html += `<li class="list-group-item">No topics detected</li>`;
+            } else {
+              for (const [topic, score] of topics) {
+                html += `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${topic}
+                                    <span class="badge bg-primary rounded-pill">${score.toFixed(
+                                      2
+                                    )}</span>
+                                </li>
+                            `;
+              }
+            }
+
+            html += `
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <h6>Intents</h6>
+                                        <ul class="list-group">
+                    `;
+
+            // Add intents
+            const intents = Object.entries(analysis.intents || {})
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 5);
+
+            if (intents.length === 0) {
+              html += `<li class="list-group-item">No intents detected</li>`;
+            } else {
+              for (const [intent, count] of intents) {
+                html += `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${intent}
+                                    <span class="badge bg-primary rounded-pill">${count}</span>
+                                </li>
+                            `;
+              }
+            }
+
+            html += `
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+          }
+
+          // Add emotion section if available
+          if (emotion) {
+            html += `
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5>Emotion Analysis</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Current Emotion</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Emotion</th>
+                                                <td>${emotion.emotion || 'Neutral'}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Score</th>
+                                                <td>${(emotion.score || 0).toFixed(2)}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Audio Emotion</th>
+                                                <td>${emotion.audio_emotion || 'Neutral'}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Text Emotion</th>
+                                                <td>${emotion.text_emotion || 'Neutral'}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h6>All Scores</h6>
+                                        <table class="table table-sm">
+                    `;
+
+            // Add emotion scores
+            const scores = Object.entries(emotion.all_scores || {}).sort((a, b) => b[1] - a[1]);
+
+            if (scores.length === 0) {
+              html += `<tr><td colspan="2">No emotion scores available</td></tr>`;
+            } else {
+              for (const [emotion, score] of scores) {
+                html += `
+                                <tr>
+                                    <th>${emotion}</th>
+                                    <td>${score.toFixed(2)}</td>
+                                </tr>
+                            `;
+              }
+            }
+
+            html += `
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+          }
+
+          // Add action buttons
+          html += `
+                    <div class="row mt-4">
+                        <div class="col-12 text-end">
+                            <button class="btn btn-outline-danger" id="endSessionBtn">End Session</button>
+                        </div>
+                    </div>
+                `;
+
+          // Update details container
+          document.getElementById('sessionDetails').innerHTML = html;
+
+          // Add event listener to end session button
+          document.getElementById('endSessionBtn').addEventListener('click', function () {
+            endSession(sessionId);
+          });
+        } catch (error) {
+          console.error('Error showing session details:', error);
+          document.getElementById('sessionDetails').innerHTML = `
+                    <div class="alert alert-danger">
+                        Error loading session details: ${error.message}
+                    </div>
+                `;
+        }
+      }
+
+      // End session
+      async function endSession(sessionId) {
+        if (!confirm(`Are you sure you want to end session ${sessionId}?`)) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/session/${sessionId}`, {
+            method: 'DELETE',
+          });
+
+          if (response.ok) {
+            // Remove session from list
+            delete sessions[sessionId];
+
+            // Update sessions display
+            updateSessionsDisplay();
+
+            // Clear selected session
+            if (selectedSessionId === sessionId) {
+              selectedSessionId = null;
+              document.getElementById('sessionDetails').innerHTML = `
+                            <div class="text-center py-5 text-muted">
+                                <p>Select a session to view details</p>
+                            </div>
+                        `;
+            }
+
+            alert('Session ended successfully');
+          } else {
+            const error = await response.json();
+            alert(`Error ending session: ${error.detail}`);
+          }
+        } catch (error) {
+          console.error('Error ending session:', error);
+          alert(`Error ending session: ${error.message}`);
+        }
+      }
+    </script>
+  </body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voice AI Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        padding-top: 20px;
+        background-color: #f8f9fa;
+      }
+      .card {
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .card-header {
+        font-weight: bold;
+        background-color: #f1f8ff;
+      }
+      .session-card {
+        border-left: 5px solid #007bff;
+      }
+      .emotion-neutral {
+        background-color: #f8f9fa;
+      }
+      .emotion-happy {
+        background-color: #d4edda;
+      }
+      .emotion-sad {
+        background-color: #d1ecf1;
+      }
+      .emotion-angry {
+        background-color: #f8d7da;
+      }
+      .emotion-fearful {
+        background-color: #fff3cd;
+      }
+      .emotion-disgusted {
+        background-color: #e2e3e5;
+      }
+      .emotion-surprised {
+        background-color: #cff4fc;
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+      .status-active {
+        background-color: #28a745;
+        animation: pulse 2s infinite;
+      }
+      .status-inactive {
+        background-color: #dc3545;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .metrics-card {
+        height: 100%;
+      }
+
+      .chart-container {
+        height: 300px;
+        margin-bottom: 20px;
+      }
+
+      .message-list {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .user-message {
+        background-color: #e9ecef;
+        border-radius: 15px 15px 15px 0;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        max-width: 80%;
+      }
+
+      .ai-message {
+        background-color: #d1e7ff;
+        border-radius: 15px 15px 0 15px;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        margin-left: auto;
+        max-width: 80%;
+      }
+
+      .message-time {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="mb-4">
+        <div class="row align-items-center">
+          <div class="col">
+            <h1>Voice AI Dashboard</h1>
+            <p class="text-muted">Real-time monitoring of voice conversations</p>
+          </div>
+          <div class="col-auto">
+            <div class="d-flex align-items-center">
+              <span class="status-indicator status-active"></span>
+              <span class="me-3">System Active</span>
+              <button id="refreshBtn" class="btn btn-outline-primary">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  class="bi bi-arrow-clockwise"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"
+                  />
+                  <path
+                    d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"
+                  />
+                </svg>
+                Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="card metrics-card">
+            <div class="card-header">System Metrics</div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-6">
+                  <div class="mb-3">
+                    <h6 class="text-muted">Active Sessions</h6>
+                    <h3 id="activeSessionsCount">0</h3>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="mb-3">
+                    <h6 class="text-muted">Total Sessions</h6>
+                    <h3 id="totalSessionsCount">0</h3>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="mb-3">
+                    <h6 class="text-muted">Avg. Response Time</h6>
+                    <h3 id="avgResponseTime">0 ms</h3>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="mb-3">
+                    <h6 class="text-muted">Uptime</h6>
+                    <h3 id="uptime">0h 0m</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header">Active Sessions</div>
+            <div class="card-body">
+              <div id="sessionsContainer">
+                <div class="text-center py-5 text-muted">
+                  <p>No active sessions</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">Session Details</div>
+            <div class="card-body">
+              <div id="sessionDetails">
+                <div class="text-center py-5 text-muted">
+                  <p>Select a session to view details</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Global variables
+      let selectedSessionId = null;
+      let sessions = {};
+      let startTime = new Date();
+
+      // Initialize dashboard
+      document.addEventListener('DOMContentLoaded', function () {
+        // Set up refresh button
+        document.getElementById('refreshBtn').addEventListener('click', refreshDashboard);
+
+        // Initial data load
+        refreshDashboard();
+
+        // Set up auto-refresh every 10 seconds
+        setInterval(refreshDashboard, 10000);
+
+        // Update uptime every second
+        setInterval(updateUptime, 1000);
+      });
+
+      // Update uptime display
+      function updateUptime() {
+        const now = new Date();
+        const diff = Math.floor((now - startTime) / 1000);
+        const hours = Math.floor(diff / 3600);
+        const minutes = Math.floor((diff % 3600) / 60);
+        const seconds = diff % 60;
+
+        document.getElementById('uptime').textContent = `${hours}h ${minutes}m ${seconds}s`;
+      }
+
+      // Refresh dashboard data
+      async function refreshDashboard() {
+        try {
+          // Get system metrics
+          const metricsResponse = await fetch('/metrics');
+          const metrics = await metricsResponse.json();
+
+          // Update metrics display
+          document.getElementById('activeSessionsCount').textContent = metrics.active_sessions || 0;
+          document.getElementById('totalSessionsCount').textContent = metrics.total_sessions || 0;
+          document.getElementById('avgResponseTime').textContent = `${Math.round(
+            metrics.avg_response_time || 0
+          )} ms`;
+
+          // Get active sessions
+          const sessionsResponse = await fetch('/sessions');
+          const sessionsData = await sessionsResponse.json();
+
+          // Update sessions
+          sessions = sessionsData.sessions || {};
+
+          // Update sessions display
+          updateSessionsDisplay();
+
+          // Update selected session details if needed
+          if (selectedSessionId && sessions[selectedSessionId]) {
+            showSessionDetails(selectedSessionId);
+          } else if (selectedSessionId && !sessions[selectedSessionId]) {
+            // Selected session no longer exists
+            selectedSessionId = null;
+            document.getElementById('sessionDetails').innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <p>Select a session to view details</p>
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          console.error('Error refreshing dashboard:', error);
+        }
+      }
+
+      // Update sessions display
+      function updateSessionsDisplay() {
+        const container = document.getElementById('sessionsContainer');
+
+        if (Object.keys(sessions).length === 0) {
+          container.innerHTML = `
+                    <div class="text-center py-5 text-muted">
+                        <p>No active sessions</p>
+                    </div>
+                `;
+          return;
+        }
+
+        let html = '';
+
+        for (const sessionId in sessions) {
+          const session = sessions[sessionId];
+          const lastActivity = new Date(session.last_activity * 1000);
+          const now = new Date();
+          const diffMinutes = Math.floor((now - lastActivity) / 60000);
+
+          const isActive = diffMinutes < 5;
+          const statusClass = isActive ? 'status-active' : 'status-inactive';
+          const emotionClass = `emotion-${session.emotion || 'neutral'}`;
+
+          html += `
+                    <div class="card session-card mb-2 ${emotionClass}" data-session-id="${sessionId}">
+                        <div class="card-body py-2">
+                            <div class="row align-items-center">
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <span class="status-indicator ${statusClass}"></span>
+                                        <strong>${session.user_id}</strong>
+                                    </div>
+                                    <small class="text-muted">ID: ${sessionId.substring(
+                                      0,
+                                      8
+                                    )}...</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="d-block">Language: ${
+                                      session.language || 'Unknown'
+                                    }</small>
+                                    <small class="d-block">Accent: ${
+                                      session.accent || 'Standard'
+                                    }</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="d-block">Emotion: ${
+                                      session.emotion || 'Neutral'
+                                    }</small>
+                                    <small class="d-block">Last activity: ${diffMinutes}m ago</small>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <button class="btn btn-sm btn-outline-primary view-session-btn">
+                                        View
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        container.innerHTML = html;
+
+        // Add event listeners to view buttons
+        document.querySelectorAll('.view-session-btn').forEach((button) => {
+          button.addEventListener('click', function () {
+            const sessionId = this.closest('.session-card').dataset.sessionId;
+            selectedSessionId = sessionId;
+            showSessionDetails(sessionId);
+          });
+        });
+      }
+
+      // Show session details
+      async function showSessionDetails(sessionId) {
+        try {
+          // Get session details
+          const sessionResponse = await fetch(`/session/${sessionId}`);
+          const session = await sessionResponse.json();
+
+          // Get session messages
+          const messagesResponse = await fetch(`/session/${sessionId}/messages`);
+          const messagesData = await messagesResponse.json();
+          const messages = messagesData.messages || [];
+
+          // Get session analysis
+          let analysis = null;
+          try {
+            const analysisResponse = await fetch(`/session/${sessionId}/analysis`);
+            analysis = await analysisResponse.json();
+          } catch (error) {
+            console.warn('No analysis available for session:', sessionId);
+          }
+
+          // Get session emotion
+          let emotion = null;
+          try {
+            const emotionResponse = await fetch(`/session/${sessionId}/emotion`);
+            emotion = await emotionResponse.json();
+          } catch (error) {
+            console.warn('No emotion data available for session:', sessionId);
+          }
+
+          // Build details HTML
+          let html = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Session Information</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Session ID</th>
+                                    <td>${sessionId}</td>
+                                </tr>
+                                <tr>
+                                    <th>User ID</th>
+                                    <td>${session.user_id}</td>
+                                </tr>
+                                <tr>
+                                    <th>Created</th>
+                                    <td>${new Date(session.created_at).toLocaleString()}</td>
+                                </tr>
+                                <tr>
+                                    <th>Language</th>
+                                    <td>${session.language || 'Unknown'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Accent</th>
+                                    <td>${session.accent || 'Standard'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Target Language</th>
+                                    <td>${
+                                      session.target_language || session.language || 'Unknown'
+                                    }</td>
+                                </tr>
+                                <tr>
+                                    <th>Auto Translate</th>
+                                    <td>${session.auto_translate ? 'Enabled' : 'Disabled'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Verified</th>
+                                    <td>${session.verified ? 'Yes' : 'No'}</td>
+                                </tr>
+                                <tr>
+                                    <th>Current Emotion</th>
+                                    <td>${session.emotion || 'Neutral'} (${(
+            session.emotion_score || 0
+          ).toFixed(2)})</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Conversation</h5>
+                            <div class="message-list">
+                `;
+
+          if (messages.length === 0) {
+            html += `<p class="text-muted">No messages yet</p>`;
+          } else {
+            for (const message of messages) {
+              const time = new Date(message.timestamp * 1000).toLocaleTimeString();
+              if (message.role === 'user') {
+                html += `
+                                <div class="user-message">
+                                    <div>${message.content}</div>
+                                    <div class="message-time">${time}</div>
+                                </div>
+                            `;
+              } else {
+                html += `
+                                <div class="ai-message">
+                                    <div>${message.content}</div>
+                                    <div class="message-time">${time}</div>
+                                </div>
+                            `;
+              }
+            }
+          }
+
+          html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+          // Add analysis section if available
+          if (analysis) {
+            html += `
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5>Conversation Analysis</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6>Sentiment</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Positive</th>
+                                                <td>${(analysis.sentiment.positive || 0).toFixed(
+                                                  2
+                                                )}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Negative</th>
+                                                <td>${(analysis.sentiment.negative || 0).toFixed(
+                                                  2
+                                                )}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Neutral</th>
+                                                <td>${(analysis.sentiment.neutral || 0).toFixed(
+                                                  2
+                                                )}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <h6>Topics</h6>
+                                        <ul class="list-group">
+                    `;
+
+            // Add topics
+            const topics = Object.entries(analysis.topics || {})
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 5);
+
+            if (topics.length === 0) {
+              html += `<li class="list-group-item">No topics detected</li>`;
+            } else {
+              for (const [topic, score] of topics) {
+                html += `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${topic}
+                                    <span class="badge bg-primary rounded-pill">${score.toFixed(
+                                      2
+                                    )}</span>
+                                </li>
+                            `;
+              }
+            }
+
+            html += `
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <h6>Intents</h6>
+                                        <ul class="list-group">
+                    `;
+
+            // Add intents
+            const intents = Object.entries(analysis.intents || {})
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 5);
+
+            if (intents.length === 0) {
+              html += `<li class="list-group-item">No intents detected</li>`;
+            } else {
+              for (const [intent, count] of intents) {
+                html += `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${intent}
+                                    <span class="badge bg-primary rounded-pill">${count}</span>
+                                </li>
+                            `;
+              }
+            }
+
+            html += `
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+          }
+
+          // Add emotion section if available
+          if (emotion) {
+            html += `
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5>Emotion Analysis</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Current Emotion</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th>Emotion</th>
+                                                <td>${emotion.emotion || 'Neutral'}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Score</th>
+                                                <td>${(emotion.score || 0).toFixed(2)}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Audio Emotion</th>
+                                                <td>${emotion.audio_emotion || 'Neutral'}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Text Emotion</th>
+                                                <td>${emotion.text_emotion || 'Neutral'}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h6>All Scores</h6>
+                                        <table class="table table-sm">
+                    `;
+
+            // Add emotion scores
+            const scores = Object.entries(emotion.all_scores || {}).sort((a, b) => b[1] - a[1]);
+
+            if (scores.length === 0) {
+              html += `<tr><td colspan="2">No emotion scores available</td></tr>`;
+            } else {
+              for (const [emotion, score] of scores) {
+                html += `
+                                <tr>
+                                    <th>${emotion}</th>
+                                    <td>${score.toFixed(2)}</td>
+                                </tr>
+                            `;
+              }
+            }
+
+            html += `
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+          }
+
+          // Add action buttons
+          html += `
+                    <div class="row mt-4">
+                        <div class="col-12 text-end">
+                            <button class="btn btn-outline-danger" id="endSessionBtn">End Session</button>
+                        </div>
+                    </div>
+                `;
+
+          // Update details container
+          document.getElementById('sessionDetails').innerHTML = html;
+
+          // Add event listener to end session button
+          document.getElementById('endSessionBtn').addEventListener('click', function () {
+            endSession(sessionId);
+          });
+        } catch (error) {
+          console.error('Error showing session details:', error);
+          document.getElementById('sessionDetails').innerHTML = `
+                    <div class="alert alert-danger">
+                        Error loading session details: ${error.message}
+                    </div>
+                `;
+        }
+      }
+
+      // End session
+      async function endSession(sessionId) {
+        if (!confirm(`Are you sure you want to end session ${sessionId}?`)) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/session/${sessionId}`, {
+            method: 'DELETE',
+          });
+
+          if (response.ok) {
+            // Remove session from list
+            delete sessions[sessionId];
+
+            // Update sessions display
+            updateSessionsDisplay();
+
+            // Clear selected session
+            if (selectedSessionId === sessionId) {
+              selectedSessionId = null;
+              document.getElementById('sessionDetails').innerHTML = `
+                            <div class="text-center py-5 text-muted">
+                                <p>Select a session to view details</p>
+                            </div>
+                        `;
+            }
+
+            alert('Session ended successfully');
+          } else {
+            const error = await response.json();
+            alert(`Error ending session: ${error.detail}`);
+          }
+        } catch (error) {
+          console.error('Error ending session:', error);
+          alert(`Error ending session: ${error.message}`);
+        }
+      }
+    </script>
+  </body>
+</html>

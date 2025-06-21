@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Microfoon Test - DoosLetters AI</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 100vh;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .test-section {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 10px;
+      }
+
+      .test-result {
+        padding: 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+        font-weight: bold;
+      }
+
+      .success {
+        background: rgba(76, 175, 80, 0.3);
+        border: 1px solid #4caf50;
+      }
+      .error {
+        background: rgba(244, 67, 54, 0.3);
+        border: 1px solid #f44336;
+      }
+      .info {
+        background: rgba(33, 150, 243, 0.3);
+        border: 1px solid #2196f3;
+      }
+      .warning {
+        background: rgba(255, 193, 7, 0.3);
+        border: 1px solid #ffc107;
+      }
+
+      button {
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+      }
+
+      button:disabled {
+        background: #666;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .visualizer {
+        width: 100%;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        margin: 20px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .volume-bar {
+        width: 80%;
+        height: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .volume-level {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #ffc107, #f44336);
+        width: 0%;
+        transition: width 0.1s ease;
+        border-radius: 10px;
+      }
+
+      .audio-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin: 20px 0;
+      }
+
+      .info-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .info-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4caf50;
+      }
+
+      .info-label {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-top: 5px;
+      }
+
+      .log {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 15px;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 12px;
+        margin: 20px 0;
+      }
+
+      .recording-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background: #f44336;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: blink 1s infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        50% {
+          opacity: 1;
+        }
+        51%,
+        100% {
+          opacity: 0.3;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎤 Microfoon Test Suite</h1>
+
+      <!-- Browser Compatibility Test -->
+      <div class="test-section">
+        <h3>1. Browser Compatibiliteit</h3>
+        <div id="browser-test">Testing...</div>
+      </div>
+
+      <!-- Permission Test -->
+      <div class="test-section">
+        <h3>2. Microfoon Toegang</h3>
+        <button onclick="testPermissions()">Test Microfoon Toegang</button>
+        <div id="permission-result"></div>
+      </div>
+
+      <!-- Audio Devices Test -->
+      <div class="test-section">
+        <h3>3. Audio Apparaten</h3>
+        <button onclick="listAudioDevices()">Scan Audio Apparaten</button>
+        <div id="devices-result"></div>
+      </div>
+
+      <!-- Recording Test -->
+      <div class="test-section">
+        <h3>4. Recording Test</h3>
+        <div class="audio-info">
+          <div class="info-item">
+            <div class="info-value" id="recording-status">Gestopt</div>
+            <div class="info-label">Status</div>
+          </div>
+          <div class="info-item">
+            <div class="info-value" id="recording-duration">0s</div>
+            <div class="info-label">Duur</div>
+          </div>
+          <div class="info-item">
+            <div class="info-value" id="audio-size">0 KB</div>
+            <div class="info-label">Audio Grootte</div>
+          </div>
+          <div class="info-item">
+            <div class="info-value" id="sample-rate">0 Hz</div>
+            <div class="info-label">Sample Rate</div>
+          </div>
+        </div>
+
+        <div class="visualizer">
+          <div class="volume-bar">
+            <div class="volume-level" id="volume-level"></div>
+          </div>
+        </div>
+
+        <div style="text-align: center">
+          <button id="record-btn" onclick="toggleRecording()">🎤 Start Recording</button>
+          <button id="play-btn" onclick="playRecording()" disabled>🔊 Afspelen</button>
+          <button onclick="downloadRecording()" disabled id="download-btn">💾 Download</button>
+        </div>
+
+        <div id="recording-result"></div>
+      </div>
+
+      <!-- Audio Analysis -->
+      <div class="test-section">
+        <h3>5. Audio Analyse</h3>
+        <div id="audio-analysis"></div>
+      </div>
+
+      <!-- Debug Log -->
+      <div class="test-section">
+        <h3>6. Debug Log</h3>
+        <div class="log" id="debug-log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+      </div>
+    </div>
+
+    <script>
+      let mediaRecorder = null;
+      let audioChunks = [];
+      let audioContext = null;
+      let analyser = null;
+      let microphone = null;
+      let recordingBlob = null;
+      let recordingStartTime = null;
+      let volumeMonitor = null;
+
+      // Initialize tests
+      document.addEventListener('DOMContentLoaded', function () {
+        testBrowserCompatibility();
+        log('🚀 Microfoon test suite gestart');
+      });
+
+      function log(message) {
+        const timestamp = new Date().toLocaleTimeString();
+        const logElement = document.getElementById('debug-log');
+        logElement.innerHTML += `[${timestamp}] ${message}\n`;
+        logElement.scrollTop = logElement.scrollHeight;
+        console.log(message);
+      }
+
+      function clearLog() {
+        document.getElementById('debug-log').innerHTML = '';
+      }
+
+      function showResult(elementId, message, type = 'info') {
+        const element = document.getElementById(elementId);
+        element.innerHTML = `<div class="test-result ${type}">${message}</div>`;
+      }
+
+      // Test 1: Browser Compatibility
+      function testBrowserCompatibility() {
+        const tests = [];
+
+        // MediaDevices API
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          tests.push('✅ getUserMedia ondersteund');
+        } else {
+          tests.push('❌ getUserMedia NIET ondersteund');
+        }
+
+        // MediaRecorder API
+        if (window.MediaRecorder) {
+          tests.push('✅ MediaRecorder ondersteund');
+
+          // Check supported MIME types
+          const mimeTypes = [
+            'audio/webm',
+            'audio/webm;codecs=opus',
+            'audio/wav',
+            'audio/mp4',
+            'audio/ogg',
+          ];
+
+          const supportedTypes = mimeTypes.filter((type) => MediaRecorder.isTypeSupported(type));
+          tests.push(`✅ Ondersteunde formaten: ${supportedTypes.join(', ')}`);
+        } else {
+          tests.push('❌ MediaRecorder NIET ondersteund');
+        }
+
+        // Web Audio API
+        if (window.AudioContext || window.webkitAudioContext) {
+          tests.push('✅ Web Audio API ondersteund');
+        } else {
+          tests.push('❌ Web Audio API NIET ondersteund');
+        }
+
+        // HTTPS Check
+        if (location.protocol === 'https:' || location.hostname === 'localhost') {
+          tests.push('✅ Secure context (HTTPS/localhost)');
+        } else {
+          tests.push('⚠️ Niet-secure context - microfoon mogelijk geblokkeerd');
+        }
+
+        const result = tests.join('<br>');
+        const hasErrors = tests.some((test) => test.includes('❌'));
+        showResult('browser-test', result, hasErrors ? 'error' : 'success');
+
+        log('Browser compatibiliteit test voltooid');
+      }
+
+      // Test 2: Permission Test
+      async function testPermissions() {
+        log('🔐 Testing microfoon toegang...');
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            },
+          });
+
+          // Test successful
+          showResult('permission-result', '✅ Microfoon toegang verleend!', 'success');
+          log('✅ Microfoon toegang verkregen');
+
+          // Get audio track info
+          const audioTrack = stream.getAudioTracks()[0];
+          const settings = audioTrack.getSettings();
+
+          log(`📊 Audio track settings: ${JSON.stringify(settings)}`);
+
+          // Stop the stream
+          stream.getTracks().forEach((track) => track.stop());
+
+          return true;
+        } catch (error) {
+          let errorMessage = '';
+
+          switch (error.name) {
+            case 'NotAllowedError':
+              errorMessage = '❌ Microfoon toegang geweigerd door gebruiker';
+              break;
+            case 'NotFoundError':
+              errorMessage = '❌ Geen microfoon gevonden';
+              break;
+            case 'NotReadableError':
+              errorMessage = '❌ Microfoon in gebruik door andere applicatie';
+              break;
+            case 'OverconstrainedError':
+              errorMessage = '❌ Microfoon voldoet niet aan eisen';
+              break;
+            default:
+              errorMessage = `❌ Onbekende fout: ${error.message}`;
+          }
+
+          showResult('permission-result', errorMessage, 'error');
+          log(`❌ Microfoon fout: ${error.name} - ${error.message}`);
+
+          return false;
+        }
+      }
+
+      // Test 3: List Audio Devices
+      async function listAudioDevices() {
+        log('🎧 Scanning audio apparaten...');
+
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const audioInputs = devices.filter((device) => device.kind === 'audioinput');
+
+          if (audioInputs.length === 0) {
+            showResult('devices-result', '❌ Geen audio input apparaten gevonden', 'error');
+            return;
+          }
+
+          let deviceList = '<strong>Gevonden audio input apparaten:</strong><br><br>';
+          audioInputs.forEach((device, index) => {
+            const label = device.label || `Microfoon ${index + 1}`;
+            const deviceId = device.deviceId.substring(0, 20) + '...';
+            deviceList += `📱 ${label}<br><small>ID: ${deviceId}</small><br><br>`;
+          });
+
+          showResult('devices-result', deviceList, 'success');
+          log(`✅ ${audioInputs.length} audio input apparaten gevonden`);
+        } catch (error) {
+          showResult('devices-result', `❌ Fout bij scannen apparaten: ${error.message}`, 'error');
+          log(`❌ Devices scan fout: ${error.message}`);
+        }
+      }
+
+      // Test 4: Recording Test
+      async function toggleRecording() {
+        const recordBtn = document.getElementById('record-btn');
+
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+          await startRecording();
+        } else {
+          stopRecording();
+        }
+      }
+
+      async function startRecording() {
+        log('🎙️ Starting recording...');
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+              sampleRate: 44100,
+            },
+          });
+
+          // Setup audio analysis
+          setupAudioAnalysis(stream);
+
+          // Find best supported MIME type
+          const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/wav', 'audio/mp4'];
+
+          let selectedMimeType = '';
+          for (const mimeType of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(mimeType)) {
+              selectedMimeType = mimeType;
+              break;
+            }
+          }
+
+          if (!selectedMimeType) {
+            throw new Error('Geen ondersteund audio formaat gevonden');
+          }
+
+          log(`📼 Using MIME type: ${selectedMimeType}`);
+
+          // Setup MediaRecorder
+          mediaRecorder = new MediaRecorder(stream, {
+            mimeType: selectedMimeType,
+            audioBitsPerSecond: 128000,
+          });
+
+          audioChunks = [];
+
+          mediaRecorder.ondataavailable = function (event) {
+            if (event.data.size > 0) {
+              audioChunks.push(event.data);
+              log(`📦 Audio chunk: ${event.data.size} bytes`);
+            }
+          };
+
+          mediaRecorder.onstop = function () {
+            processRecording();
+          };
+
+          mediaRecorder.onerror = function (event) {
+            log(`❌ MediaRecorder error: ${event.error}`);
+          };
+
+          // Start recording
+          mediaRecorder.start(1000); // 1 second chunks
+          recordingStartTime = Date.now();
+
+          // Update UI
+          document.getElementById('record-btn').innerHTML =
+            '<span class="recording-indicator"></span>🛑 Stop Recording';
+          document.getElementById('recording-status').textContent = 'Opname...';
+          document.getElementById('sample-rate').textContent = '44100 Hz';
+
+          // Start duration timer
+          updateRecordingDuration();
+
+          log('✅ Recording gestart');
+        } catch (error) {
+          log(`❌ Recording start fout: ${error.message}`);
+          showResult('recording-result', `❌ Recording fout: ${error.message}`, 'error');
+        }
+      }
+
+      function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+
+          // Stop all tracks
+          mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+
+          // Stop volume monitoring
+          if (volumeMonitor) {
+            clearInterval(volumeMonitor);
+          }
+
+          // Update UI
+          document.getElementById('record-btn').innerHTML = '🎤 Start Recording';
+          document.getElementById('recording-status').textContent = 'Gestopt';
+
+          log('🛑 Recording gestopt');
+        }
+      }
+
+      function setupAudioAnalysis(stream) {
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioContext.createAnalyser();
+          microphone = audioContext.createMediaStreamSource(stream);
+
+          analyser.fftSize = 256;
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+
+          microphone.connect(analyser);
+
+          // Start volume monitoring
+          volumeMonitor = setInterval(() => {
+            analyser.getByteFrequencyData(dataArray);
+
+            // Calculate volume level
+            let sum = 0;
+            for (let i = 0; i < bufferLength; i++) {
+              sum += dataArray[i];
+            }
+            const average = sum / bufferLength;
+            const volumePercent = (average / 128) * 100;
+
+            // Update volume visualizer
+            document.getElementById('volume-level').style.width = volumePercent + '%';
+          }, 100);
+
+          log('🎵 Audio analyse gestart');
+        } catch (error) {
+          log(`❌ Audio analyse fout: ${error.message}`);
+        }
+      }
+
+      function updateRecordingDuration() {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+          document.getElementById('recording-duration').textContent = duration + 's';
+          setTimeout(updateRecordingDuration, 1000);
+        }
+      }
+
+      function processRecording() {
+        if (audioChunks.length === 0) {
+          showResult('recording-result', '❌ Geen audio data ontvangen', 'error');
+          return;
+        }
+
+        // Create blob
+        recordingBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const sizeKB = Math.round(recordingBlob.size / 1024);
+
+        // Update UI
+        document.getElementById('audio-size').textContent = sizeKB + ' KB';
+        document.getElementById('play-btn').disabled = false;
+        document.getElementById('download-btn').disabled = false;
+
+        // Show analysis
+        analyzeRecording(recordingBlob);
+
+        showResult(
+          'recording-result',
+          `✅ Recording voltooid!<br>
+                 📊 Grootte: ${sizeKB} KB<br>
+                 🎵 Duur: ${document.getElementById('recording-duration').textContent}<br>
+                 🎧 Klaar voor afspelen`,
+          'success'
+        );
+
+        log(`✅ Recording verwerkt: ${sizeKB} KB`);
+      }
+
+      function playRecording() {
+        if (!recordingBlob) {
+          log('❌ Geen recording beschikbaar');
+          return;
+        }
+
+        const audioUrl = URL.createObjectURL(recordingBlob);
+        const audio = new Audio(audioUrl);
+
+        audio
+          .play()
+          .then(() => {
+            log('🔊 Recording afspelen gestart');
+          })
+          .catch((error) => {
+            log(`❌ Afspelen fout: ${error.message}`);
+          });
+
+        audio.onended = () => {
+          log('✅ Recording afspelen voltooid');
+        };
+      }
+
+      function downloadRecording() {
+        if (!recordingBlob) {
+          log('❌ Geen recording beschikbaar');
+          return;
+        }
+
+        const url = URL.createObjectURL(recordingBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `microfoon-test-${new Date().getTime()}.webm`;
+        a.click();
+
+        log('💾 Recording download gestart');
+      }
+
+      function analyzeRecording(blob) {
+        const analysisHtml = `
+                <div class="audio-info">
+                    <div class="info-item">
+                        <div class="info-value">${blob.type}</div>
+                        <div class="info-label">MIME Type</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-value">${Math.round(blob.size / 1024)} KB</div>
+                        <div class="info-label">Bestand Grootte</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-value">${audioChunks.length}</div>
+                        <div class="info-label">Audio Chunks</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-value">44100 Hz</div>
+                        <div class="info-label">Sample Rate</div>
+                    </div>
+                </div>
+                
+                <div class="test-result success">
+                    ✅ Audio succesvol opgenomen en analyseerbaar voor AI processing
+                </div>
+            `;
+
+        document.getElementById('audio-analysis').innerHTML = analysisHtml;
+      }
+    </script>
+  </body>
+</html>

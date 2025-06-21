@@ -1,0 +1,38 @@
+version: '3.8'
+
+networks:
+  ai-network:
+    external: true
+    name: ai-voice-agent-v3_ai-network
+
+services:
+  # Edge AI Service
+  edge-ai:
+    build:
+      context: ./services/edge-ai
+      dockerfile: Dockerfile
+    container_name: edge-ai
+    ports:
+      - '8500:8500'
+    environment:
+      - PORT=8500
+      - LOG_LEVEL=INFO
+      - SERVICE_NAME=edge-ai
+      - SERVICE_HOST=edge-ai
+      - SERVICE_PORT=8500
+      - SERVICE_DISCOVERY_HOST=service-discovery
+      - SERVICE_DISCOVERY_PORT=8000
+    networks:
+      - ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M

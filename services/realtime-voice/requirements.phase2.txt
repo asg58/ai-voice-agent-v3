@@ -1,0 +1,25 @@
+# Phase 2 Requirements - Real AI Integration
+# Extended requirements for OpenAI API integration
+
+# === PHASE 1 REQUIREMENTS ===
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+websockets==12.0
+python-multipart==0.0.6
+
+# === PHASE 2 AI REQUIREMENTS ===
+openai==1.3.0
+python-dotenv==1.0.0
+
+# === AUDIO PROCESSING ===
+speechrecognition==3.10.0
+pyaudio==0.2.11
+pydub==0.25.1
+
+# === ASYNC & STREAMING ===
+aiofiles==23.2.1
+httpx==0.25.2
+
+# === UTILITIES ===
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4

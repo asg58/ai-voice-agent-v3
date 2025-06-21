@@ -1,0 +1,72 @@
+# =============================================================================
+# REAL-TIME VOICE AI SERVICE - COMPLETE REQUIREMENTS
+# =============================================================================
+# Combined requirements from all phase files for Docker deployment
+
+# === CORE FRAMEWORK ===
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+websockets==12.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-multipart==0.0.6
+python-dotenv==1.0.0
+
+# === AI & LLM ===
+openai==1.3.0
+openai-whisper>=20231117
+torch>=2.0.0
+torchaudio>=2.0.0
+TTS>=0.20.0
+transformers>=4.30.0
+sentencepiece>=0.1.99
+
+# === AUDIO PROCESSING ===
+numpy==1.24.3
+soundfile>=0.12.1
+pyaudio==0.2.11
+pydub==0.25.1
+speechrecognition==3.10.0
+librosa>=0.10.1
+scipy>=1.10.0
+
+# === REAL-TIME COMMUNICATION ===
+python-socketio==5.10.0
+aiortc>=1.6.0
+aiofiles==23.2.1
+
+# === HTTP & ASYNC ===
+httpx==0.25.2
+aiohttp==3.9.1
+requests>=2.31.0
+
+# === MEMORY & DATABASE ===
+redis>=4.5.0
+minio>=7.1.0
+psycopg2-binary>=2.9.0
+weaviate-client>=3.20.0
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+neo4j>=5.14.0
+aio_pika>=9.0.0
+
+# === UTILITIES ===
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+typer==0.9.0
+tqdm>=4.65.0
+numba>=0.57.0
+llvmlite>=0.40.0
+more-itertools>=10.0.0
+regex>=2023.0.0
+tiktoken>=0.5.0
+
+# === MESSAGING ===
+aio_pika>=9.0.0
+
+# === MONITORING & LOGGING ===
+prometheus-client>=0.17.0
+structlog>=23.1.0
+
+# === DEPLOYMENT ===
+gunicorn>=21.2.0

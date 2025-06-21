@@ -1,0 +1,42 @@
+version: '3.8'
+
+networks:
+  ai-network:
+    external: true
+    name: ai-voice-agent-v3_ai-network
+
+services:
+  # Dashboard Service
+  dashboard:
+    build:
+      context: ./services/dashboard
+      dockerfile: Dockerfile
+    container_name: dashboard
+    ports:
+      - '8300:8300'
+    environment:
+      - PORT=8300
+      - LOG_LEVEL=INFO
+      - DEBUG=False
+      - SECRET_KEY=your-secret-key-for-jwt-token-generation
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SERVICE_DISCOVERY_HOST=service-discovery
+      - SERVICE_DISCOVERY_PORT=8000
+    networks:
+      - ai-network
+    depends_on:
+      - redis
+      - service-discovery
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8300/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M

@@ -1,0 +1,28 @@
+version: '3.8'
+
+networks:
+  ai-network:
+    external: true
+    name: ai-voice-agent-v3_ai-network
+
+services:
+  # Service Discovery
+  service-discovery:
+    build:
+      context: ./services/service-discovery
+      dockerfile: Dockerfile
+    container_name: service-discovery
+    ports:
+      - '8501:8500'
+    environment:
+      - PORT=8500
+      - LOG_LEVEL=INFO
+    networks:
+      - ai-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    restart: unless-stopped

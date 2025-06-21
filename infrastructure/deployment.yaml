@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: multi-region-deployment
+  namespace: default
+
+data:
+  regions: |
+    - us-east-1
+    - eu-west-1
+    - ap-southeast-1

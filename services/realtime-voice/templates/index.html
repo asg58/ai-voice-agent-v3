@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
+    <script src="/static/js/app.js" defer></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Real-time Voice AI</h1>
+        <p>Talk to our AI assistant using your microphone</p>
+      </header>
+
+      <main>
+        <div class="voice-interface">
+          <div class="status-indicator">
+            <div id="status-light" class="status-light"></div>
+            <span id="status-text">Ready</span>
+          </div>
+
+          <div class="conversation-container">
+            <div id="conversation" class="conversation"></div>
+          </div>
+
+          <div class="controls">
+            <button id="start-btn" class="primary-btn">Start Conversation</button>
+            <button id="stop-btn" class="secondary-btn" disabled>End Conversation</button>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <p>AI Voice Agent Platform v3</p>
+        <a href="/dashboard">Dashboard</a> | <a href="/health/health">Health</a>
+      </footer>
+    </div>
+  </body>
+</html>
